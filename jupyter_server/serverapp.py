@@ -4,8 +4,6 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 
-from __future__ import absolute_import, print_function
-
 import jupyter_server
 import binascii
 import datetime
@@ -28,13 +26,9 @@ import socket
 import sys
 import threading
 import time
-import warnings
 import webbrowser
 
-try: #PY3
-    from base64 import encodebytes
-except ImportError: #PY2
-    from base64 import encodestring as encodebytes
+from base64 import encodebytes
 
 
 from jinja2 import Environment, FileSystemLoader
@@ -102,7 +96,6 @@ from traitlets import (
     Any, Dict, Unicode, Integer, List, Bool, Bytes, Instance,
     TraitError, Type, Float, observe, default, validate
 )
-from ipython_genutils import py3compat
 from jupyter_core.paths import jupyter_runtime_dir, jupyter_path
 from jupyter_server._sysinfo import get_sys_info
 
@@ -170,7 +163,7 @@ class ServerWebApplication(web.Application):
             "template_path",
             jupyter_app.template_file_path,
         )
-        if isinstance(_template_path, py3compat.string_types):
+        if isinstance(_template_path, unicode):
             _template_path = (_template_path,)
         template_path = [os.path.expanduser(path) for path in _template_path]
 
@@ -808,8 +801,6 @@ class ServerApp(JupyterApp):
             # Address is a hostname
             for info in socket.getaddrinfo(self.ip, self.port, 0, socket.SOCK_STREAM):
                 addr = info[4][0]
-                if not py3compat.PY3:
-                    addr = addr.decode('ascii')
 
                 try:
                     parsed = ipaddress.ip_address(addr.split('%')[0])
@@ -1059,7 +1050,7 @@ class ServerApp(JupyterApp):
         if self.file_to_run:
             return os.path.dirname(os.path.abspath(self.file_to_run))
         else:
-            return py3compat.getcwd()
+            return os.getcwd()
 
     @validate('root_dir')
     def _root_dir_validate(self, proposal):

@@ -34,11 +34,7 @@ from jupyter_server.utils import (
 from jupyter_server.base.handlers import AuthenticatedFileHandler
 from jupyter_server.transutils import _
 
-try:
-    from os.path import samefile
-except ImportError:
-    # windows + py2
-    from jupyter_server.utils import samefile_simple as samefile
+from os.path import samefile
 
 _script_exporter = None
 

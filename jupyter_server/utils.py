@@ -3,8 +3,6 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 
-from __future__ import print_function
-
 import ctypes
 import errno
 import os
@@ -12,13 +10,8 @@ import stat
 import sys
 from distutils.version import LooseVersion
 
-try:
-    from urllib.parse import quote, unquote, urlparse
-except ImportError:
-    from urllib import quote, unquote
-    from urlparse import urlparse
+from urllib.parse import quote, unquote, urlparse
 
-from ipython_genutils import py3compat
 
 # UF_HIDDEN is a stat flag not defined in the stat module.
 # It is used by BSD to indicate hidden files.
@@ -75,7 +68,7 @@ def url_escape(path):
 
     Turns '/foo bar/' into '/foo%20bar/'
     """
-    parts = py3compat.unicode_to_str(path, encoding='utf8').split('/')
+    parts = path.split('/')
     return u'/'.join([quote(p) for p in parts])
 
 def url_unescape(path):
@@ -84,8 +77,8 @@ def url_unescape(path):
     Turns '/foo%20bar/' into '/foo bar/'
     """
     return u'/'.join([
-        py3compat.str_to_unicode(unquote(p), encoding='utf8')
-        for p in py3compat.unicode_to_str(path, encoding='utf8').split('/')
+        unquote(p)
+        for p in path.split('/')
     ])
 
 
@@ -111,7 +104,7 @@ def is_file_hidden_win(abs_path, stat_res=None):
     win32_FILE_ATTRIBUTE_HIDDEN = 0x02
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(
-            py3compat.cast_unicode(abs_path)
+            abs_path
         )
     except AttributeError:
         pass
@@ -215,31 +208,6 @@ def is_hidden(abs_path, abs_root=''):
 
     return False
 
-def samefile_simple(path, other_path):
-    """
-    Fill in for os.path.samefile when it is unavailable (Windows+py2).
-
-    Do a case-insensitive string comparison in this case
-    plus comparing the full stat result (including times)
-    because Windows + py2 doesn't support the stat fields
-    needed for identifying if it's the same file (st_ino, st_dev).
-
-    Only to be used if os.path.samefile is not available.
-
-    Parameters
-    -----------
-    path:       String representing a path to a file
-    other_path: String representing a path to another file
-
-    Returns
-    -----------
-    same:   Boolean that is True if both path and other path are the same
-    """
-    path_stat = os.stat(path)
-    other_path_stat = os.stat(other_path)
-    return (path.lower() == other_path.lower()
-        and path_stat == other_path_stat)
-
 
 def to_os_path(path, root=''):
     """Convert an API path to a filesystem path
@@ -251,6 +219,7 @@ def to_os_path(path, root=''):
     parts = [p for p in parts if p != ''] # remove duplicate splits
     path = os.path.join(root, *parts)
     return path
+
 
 def to_api_path(os_path, root=''):
     """Convert a filesystem path to an API path

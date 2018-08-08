@@ -1,6 +1,5 @@
 # coding: utf-8
 """Tests for the notebook manager."""
-from __future__ import print_function
 
 import os
 import sys
@@ -15,7 +14,7 @@ from tempfile import NamedTemporaryFile
 
 from nbformat import v4 as nbformat
 
-from ipython_genutils.tempdir import TemporaryDirectory
+from tempfile import TemporaryDirectory
 from traitlets import TraitError
 from ipython_genutils.testing import decorators as dec
 

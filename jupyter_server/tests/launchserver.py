@@ -1,7 +1,5 @@
 """Base class for server tests."""
 
-from __future__ import print_function
-
 from binascii import hexlify
 from contextlib import contextmanager
 import errno
@@ -13,10 +11,7 @@ from unittest import TestCase
 
 pjoin = os.path.join
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch #py2
+from unittest.mock import patch
 
 import requests
 from tornado.ioloop import IOLoop

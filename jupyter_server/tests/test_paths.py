@@ -4,12 +4,8 @@ import nose.tools as nt
 
 from jupyter_server.base.handlers import path_regex
 
-try: # py3
-    assert_regex = nt.assert_regex
-    assert_not_regex = nt.assert_not_regex
-except AttributeError: # py2
-    assert_regex = nt.assert_regexp_matches
-    assert_not_regex = nt.assert_not_regexp_matches
+assert_regex = nt.assert_regex
+assert_not_regex = nt.assert_not_regex
 
 
 # build regexps that tornado uses:
