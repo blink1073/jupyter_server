@@ -108,7 +108,9 @@ class WebSocketMixin(object):
         close the websocket connection (VPNs, etc. can fail to cleanly close ws connections).
         Default is max of 3 pings or 30 seconds.
         """
-        return self.settings.get("ws_ping_timeout", max(3 * self.ping_interval, WS_PING_INTERVAL))
+        return self.settings.get(
+            "ws_ping_timeout", max(3 * self.ping_interval, WS_PING_INTERVAL)
+        )
 
     def check_origin(self, origin=None):
         """Check Origin == Host or Access-Control-Allow-Origin.
@@ -186,7 +188,10 @@ class WebSocketMixin(object):
         now = ioloop.IOLoop.current().time()
         since_last_pong = 1e3 * (now - self.last_pong)
         since_last_ping = 1e3 * (now - self.last_ping)
-        if since_last_ping < 2 * self.ping_interval and since_last_pong > self.ping_timeout:
+        if (
+            since_last_ping < 2 * self.ping_interval
+            and since_last_pong > self.ping_timeout
+        ):
             self.log.warning("WebSocket ping timeout after %i ms.", since_last_pong)
             self.close()
             return

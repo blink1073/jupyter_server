@@ -20,9 +20,9 @@ from jupyter_server.config_manager import recursive_update
 class ConfigManager(LoggingConfigurable):
     """Config Manager used for storing frontend config"""
 
-    config_dir_name = Unicode("serverconfig", help="""Name of the config directory.""").tag(
-        config=True
-    )
+    config_dir_name = Unicode(
+        "serverconfig", help="""Name of the config directory."""
+    ).tag(config=True)
 
     # Public API
 
@@ -65,4 +65,6 @@ class ConfigManager(LoggingConfigurable):
 
     @observe("write_config_dir")
     def _update_write_config_dir(self, change):
-        self.write_config_manager = BaseJSONConfigManager(config_dir=self.write_config_dir)
+        self.write_config_manager = BaseJSONConfigManager(
+            config_dir=self.write_config_dir
+        )

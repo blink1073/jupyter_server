@@ -82,10 +82,14 @@ async def mock_gateway_request(url, **kwargs):
         kspecs = kernelspecs.get("kernelspecs")
         if requested_kernelspec in kspecs:
             response_buf = StringIO(json.dumps(kspecs.get(requested_kernelspec)))
-            response = await ensure_async(HTTPResponse(request, 200, buffer=response_buf))
+            response = await ensure_async(
+                HTTPResponse(request, 200, buffer=response_buf)
+            )
             return response
         else:
-            raise HTTPError(404, message="Kernelspec does not exist: %s" % requested_kernelspec)
+            raise HTTPError(
+                404, message="Kernelspec does not exist: %s" % requested_kernelspec
+            )
 
     # Create kernel
     if endpoint.endswith("/api/kernels") and method == "POST":
@@ -112,21 +116,31 @@ async def mock_gateway_request(url, **kwargs):
 
     # Interrupt or restart existing kernel
     if endpoint.rfind("/api/kernels/") >= 0 and method == "POST":
-        requested_kernel_id, sep, action = endpoint.rpartition("/api/kernels/")[2].rpartition("/")
+        requested_kernel_id, sep, action = endpoint.rpartition("/api/kernels/")[
+            2
+        ].rpartition("/")
 
         if action == "interrupt":
             if requested_kernel_id in running_kernels:
                 response = await ensure_async(HTTPResponse(request, 204))
                 return response
             else:
-                raise HTTPError(404, message="Kernel does not exist: %s" % requested_kernel_id)
+                raise HTTPError(
+                    404, message="Kernel does not exist: %s" % requested_kernel_id
+                )
         elif action == "restart":
             if requested_kernel_id in running_kernels:
-                response_buf = StringIO(json.dumps(running_kernels.get(requested_kernel_id)))
-                response = await ensure_async(HTTPResponse(request, 204, buffer=response_buf))
+                response_buf = StringIO(
+                    json.dumps(running_kernels.get(requested_kernel_id))
+                )
+                response = await ensure_async(
+                    HTTPResponse(request, 204, buffer=response_buf)
+                )
                 return response
             else:
-                raise HTTPError(404, message="Kernel does not exist: %s" % requested_kernel_id)
+                raise HTTPError(
+                    404, message="Kernel does not exist: %s" % requested_kernel_id
+                )
         else:
             raise HTTPError(404, message="Bad action detected: %s" % action)
 
@@ -143,21 +157,29 @@ async def mock_gateway_request(url, **kwargs):
     if endpoint.rfind("/api/kernels/") >= 0 and method == "GET":
         requested_kernel_id = endpoint.rpartition("/")[2]
         if requested_kernel_id in running_kernels:
-            response_buf = StringIO(json.dumps(running_kernels.get(requested_kernel_id)))
-            response = await ensure_async(HTTPResponse(request, 200, buffer=response_buf))
+            response_buf = StringIO(
+                json.dumps(running_kernels.get(requested_kernel_id))
+            )
+            response = await ensure_async(
+                HTTPResponse(request, 200, buffer=response_buf)
+            )
             return response
         else:
-            raise HTTPError(404, message="Kernel does not exist: %s" % requested_kernel_id)
+            raise HTTPError(
+                404, message="Kernel does not exist: %s" % requested_kernel_id
+            )
 
 
-mocked_gateway = patch("jupyter_server.gateway.managers.gateway_request", mock_gateway_request)
+mocked_gateway = patch(
+    "jupyter_server.gateway.managers.gateway_request", mock_gateway_request
+)
 mock_gateway_url = "http://mock-gateway-server:8889"
 mock_http_user = "alice"
 
 
 @pytest.fixture
 def init_gateway(monkeypatch):
-    """Initializes the server for use as a gateway client. """
+    """Initializes the server for use as a gateway client."""
     # Clear the singleton first since previous tests may not have used a gateway.
     GatewayClient.clear_instance()
     monkeypatch.setenv("JUPYTER_GATEWAY_URL", mock_gateway_url)
@@ -173,7 +195,8 @@ async def test_gateway_env_options(init_gateway, jp_serverapp):
     assert jp_serverapp.gateway_config.url == mock_gateway_url
     assert jp_serverapp.gateway_config.http_user == mock_http_user
     assert (
-        jp_serverapp.gateway_config.connect_timeout == jp_serverapp.gateway_config.request_timeout
+        jp_serverapp.gateway_config.connect_timeout
+        == jp_serverapp.gateway_config.request_timeout
     )
     assert jp_serverapp.gateway_config.connect_timeout == 44.4
 
@@ -371,7 +394,12 @@ async def interrupt_kernel(jp_fetch, kernel_id):
     """Issues request to interrupt the given kernel"""
     with mocked_gateway:
         r = await jp_fetch(
-            "api", "kernels", kernel_id, "interrupt", method="POST", allow_nonstandard_methods=True
+            "api",
+            "kernels",
+            kernel_id,
+            "interrupt",
+            method="POST",
+            allow_nonstandard_methods=True,
         )
         assert r.code == 204
         assert r.reason == "No Content"
@@ -381,7 +409,12 @@ async def restart_kernel(jp_fetch, kernel_id):
     """Issues request to retart the given kernel"""
     with mocked_gateway:
         r = await jp_fetch(
-            "api", "kernels", kernel_id, "restart", method="POST", allow_nonstandard_methods=True
+            "api",
+            "kernels",
+            kernel_id,
+            "restart",
+            method="POST",
+            allow_nonstandard_methods=True,
         )
         assert r.code == 200
         model = json.loads(r.body.decode("utf-8"))

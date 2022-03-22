@@ -24,7 +24,9 @@ from jupyter_server.utils import ensure_async
 )
 def jp_contents_manager(request, tmp_path):
     contents_manager, use_atomic_writing = request.param
-    return contents_manager(root_dir=str(tmp_path), use_atomic_writing=use_atomic_writing)
+    return contents_manager(
+        root_dir=str(tmp_path), use_atomic_writing=use_atomic_writing
+    )
 
 
 @pytest.fixture(params=[FileContentsManager, AsyncFileContentsManager])
@@ -58,7 +60,9 @@ def symlink(jp_contents_manager, src, dst):
 
 
 def add_code_cell(notebook):
-    output = nbformat.new_output("display_data", {"application/javascript": "alert('hi');"})
+    output = nbformat.new_output(
+        "display_data", {"application/javascript": "alert('hi');"}
+    )
     cell = nbformat.new_code_cell("print('hi')", outputs=[output])
     notebook.cells.append(cell)
 
@@ -174,7 +178,9 @@ async def test_bad_symlink(jp_file_contents_manager_class, tmp_path):
     assert "bad symlink" in contents
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"), reason="Windows doesn't detect symlink loops")
+@pytest.mark.skipif(
+    sys.platform.startswith("win"), reason="Windows doesn't detect symlink loops"
+)
 async def test_recursive_symlink(jp_file_contents_manager_class, tmp_path):
     td = str(tmp_path)
 
@@ -209,10 +215,15 @@ async def test_good_symlink(jp_file_contents_manager_class, tmp_path):
     symlink(cm, file_model["path"], path)
     symlink_model = await ensure_async(cm.get(path, content=False))
     dir_model = await ensure_async(cm.get(parent))
-    assert sorted(dir_model["content"], key=lambda x: x["name"]) == [symlink_model, file_model]
+    assert sorted(dir_model["content"], key=lambda x: x["name"]) == [
+        symlink_model,
+        file_model,
+    ]
 
 
-@pytest.mark.skipif(sys.platform.startswith("win"), reason="Can't test permissions on Windows")
+@pytest.mark.skipif(
+    sys.platform.startswith("win"), reason="Can't test permissions on Windows"
+)
 async def test_403(jp_file_contents_manager_class, tmp_path):
     if hasattr(os, "getuid"):
         if os.getuid() == 0:
@@ -226,7 +237,7 @@ async def test_403(jp_file_contents_manager_class, tmp_path):
     os.chmod(os_path, 0o400)
     try:
         with cm.open(os_path, "w") as f:
-            f.write(u"don't care")
+            f.write("don't care")
     except HTTPError as e:
         assert e.status_code == 403
 
@@ -261,7 +272,7 @@ async def test_escape_root(jp_file_contents_manager_class, tmp_path):
             cm.save(
                 model={
                     "type": "file",
-                    "content": u"",
+                    "content": "",
                     "format": "text",
                 },
                 path="../foo",
@@ -353,7 +364,9 @@ async def test_get(jp_contents_manager):
     assert nb_as_file["format"] == "text"
     assert not isinstance(nb_as_file["content"], dict)
 
-    nb_as_bin_file = await ensure_async(cm.get(path, content=True, type="file", format="base64"))
+    nb_as_bin_file = await ensure_async(
+        cm.get(path, content=True, type="file", format="base64")
+    )
     assert nb_as_bin_file["format"] == "base64"
 
     # Test in sub-directory
@@ -369,15 +382,17 @@ async def test_get(jp_contents_manager):
     assert model2["path"] == "{0}/{1}".format(sub_dir.strip("/"), name)
 
     # Test with a regular file.
-    file_model_path = (await ensure_async(cm.new_untitled(path=sub_dir, ext=".txt")))["path"]
+    file_model_path = (await ensure_async(cm.new_untitled(path=sub_dir, ext=".txt")))[
+        "path"
+    ]
     file_model = await ensure_async(cm.get(file_model_path))
     expected_model = {
-        "content": u"",
-        "format": u"text",
-        "mimetype": u"text/plain",
-        "name": u"untitled.txt",
-        "path": u"foo/untitled.txt",
-        "type": u"file",
+        "content": "",
+        "format": "text",
+        "mimetype": "text/plain",
+        "name": "untitled.txt",
+        "path": "foo/untitled.txt",
+        "type": "file",
         "writable": True,
     }
     # Assert expected model is in file_model
@@ -399,7 +414,9 @@ async def test_get(jp_contents_manager):
     # Directory contents should match the contents of each individual entry
     # when requested with content=False.
     model2_no_content = await ensure_async(cm.get(sub_dir + name, content=False))
-    file_model_no_content = await ensure_async(cm.get(u"foo/untitled.txt", content=False))
+    file_model_no_content = await ensure_async(
+        cm.get("foo/untitled.txt", content=False)
+    )
     sub_sub_dir_no_content = await ensure_async(cm.get("foo/bar", content=False))
     assert sub_sub_dir_no_content["path"] == "foo/bar"
     assert sub_sub_dir_no_content["name"] == "bar"
@@ -524,7 +541,9 @@ async def test_delete(jp_contents_manager):
         [False, False, True],
     ),
 )
-async def test_delete_non_empty_folder(delete_to_trash, always_delete, error, jp_contents_manager):
+async def test_delete_non_empty_folder(
+    delete_to_trash, always_delete, error, jp_contents_manager
+):
     cm = jp_contents_manager
     cm.delete_to_trash = delete_to_trash
     cm.always_delete_dir = always_delete
@@ -615,9 +634,9 @@ async def test_delete_root(jp_contents_manager):
 
 async def test_copy(jp_contents_manager):
     cm = jp_contents_manager
-    parent = u"å b"
-    name = u"nb √.ipynb"
-    path = u"{0}/{1}".format(parent, name)
+    parent = "å b"
+    name = "nb √.ipynb"
+    path = "{0}/{1}".format(parent, name)
     _make_dir(cm, parent)
 
     orig = await ensure_async(cm.new(path=path))
@@ -626,11 +645,11 @@ async def test_copy(jp_contents_manager):
     assert copy["name"] == orig["name"].replace(".ipynb", "-Copy1.ipynb")
 
     # copy with specified name
-    copy2 = await ensure_async(cm.copy(path, u"å b/copy 2.ipynb"))
-    assert copy2["name"] == u"copy 2.ipynb"
-    assert copy2["path"] == u"å b/copy 2.ipynb"
+    copy2 = await ensure_async(cm.copy(path, "å b/copy 2.ipynb"))
+    assert copy2["name"] == "copy 2.ipynb"
+    assert copy2["path"] == "å b/copy 2.ipynb"
     # copy with specified path
-    copy2 = await ensure_async(cm.copy(path, u"/"))
+    copy2 = await ensure_async(cm.copy(path, "/"))
     assert copy2["name"] == name
     assert copy2["path"] == name
 

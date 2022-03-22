@@ -67,7 +67,11 @@ class SessionRootHandler(APIHandler):
         else:
             try:
                 model = await sm.create_session(
-                    path=path, kernel_name=kernel_name, kernel_id=kernel_id, name=name, type=mtype
+                    path=path,
+                    kernel_name=kernel_name,
+                    kernel_id=kernel_id,
+                    name=name,
+                    type=mtype,
                 )
             except NoSuchKernel:
                 msg = (
@@ -147,7 +151,9 @@ class SessionHandler(APIHandler):
         if model["kernel"]["id"] != before["kernel"]["id"]:
             # kernel_id changed because we got a new kernel
             # shutdown the old one
-            fut = asyncio.ensure_future(ensure_async(km.shutdown_kernel(before["kernel"]["id"])))
+            fut = asyncio.ensure_future(
+                ensure_async(km.shutdown_kernel(before["kernel"]["id"]))
+            )
             # If we are not using pending kernels, wait for the kernel to shut down
             if not getattr(km, "use_pending_kernels", None):
                 await fut

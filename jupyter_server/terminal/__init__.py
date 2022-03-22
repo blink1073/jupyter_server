@@ -21,7 +21,11 @@ def initialize(webapp, root_dir, connection_url, settings):
     else:
         default_shell = which("sh")
     shell_override = settings.get("shell_command")
-    shell = [os.environ.get("SHELL") or default_shell] if shell_override is None else shell_override
+    shell = (
+        [os.environ.get("SHELL") or default_shell]
+        if shell_override is None
+        else shell_override
+    )
     # When the notebook server is not running in a terminal (e.g. when
     # it's launched by a JupyterHub spawner), it's likely that the user
     # environment hasn't been fully set up. In that case, run a login

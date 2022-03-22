@@ -24,7 +24,10 @@ class FilesHandler(JupyterHandler):
     def content_security_policy(self):
         # In case we're serving HTML/SVG, confine any Javascript to a unique
         # origin so it can't interact with the notebook server.
-        return super(FilesHandler, self).content_security_policy + "; sandbox allow-scripts"
+        return (
+            super(FilesHandler, self).content_security_policy
+            + "; sandbox allow-scripts"
+        )
 
     @web.authenticated
     def head(self, path):

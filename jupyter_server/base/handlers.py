@@ -76,7 +76,9 @@ class AuthenticatedHandler(web.RequestHandler):
                 "frame-ancestors 'self'",
                 # Make sure the report-uri is relative to the base_url
                 "report-uri "
-                + self.settings.get("csp_report_uri", url_path_join(self.base_url, csp_report_uri)),
+                + self.settings.get(
+                    "csp_report_uri", url_path_join(self.base_url, csp_report_uri)
+                ),
             ]
         )
 
@@ -147,20 +149,26 @@ class AuthenticatedHandler(web.RequestHandler):
         if self.request.method == "OPTIONS":
             # no origin-check on options requests, which are used to check origins!
             return True
-        if self.login_handler is None or not hasattr(self.login_handler, "should_check_origin"):
+        if self.login_handler is None or not hasattr(
+            self.login_handler, "should_check_origin"
+        ):
             return False
         return not self.login_handler.should_check_origin(self)
 
     @property
     def token_authenticated(self):
         """Have I been authenticated with a token?"""
-        if self.login_handler is None or not hasattr(self.login_handler, "is_token_authenticated"):
+        if self.login_handler is None or not hasattr(
+            self.login_handler, "is_token_authenticated"
+        ):
             return False
         return self.login_handler.is_token_authenticated(self)
 
     @property
     def cookie_name(self):
-        default_cookie_name = non_alphanum.sub("-", "username-{}".format(self.request.host))
+        default_cookie_name = non_alphanum.sub(
+            "-", "username-{}".format(self.request.host)
+        )
         return self.settings.get("cookie_name", default_cookie_name)
 
     @property
@@ -251,7 +259,8 @@ class JupyterHandler(AuthenticatedHandler):
     @property
     def contents_js_source(self):
         self.log.debug(
-            "Using contents: %s", self.settings.get("contents_js_source", "services/contents")
+            "Using contents: %s",
+            self.settings.get("contents_js_source", "services/contents"),
         )
         return self.settings.get("contents_js_source", "services/contents")
 
@@ -311,12 +320,15 @@ class JupyterHandler(AuthenticatedHandler):
             origin = self.get_origin()
             if origin and re.match(self.allow_origin_pat, origin):
                 self.set_header("Access-Control-Allow-Origin", origin)
-        elif self.token_authenticated and "Access-Control-Allow-Origin" not in self.settings.get(
-            "headers", {}
+        elif (
+            self.token_authenticated
+            and "Access-Control-Allow-Origin" not in self.settings.get("headers", {})
         ):
             # allow token-authenticated requests cross-origin by default.
             # only apply this exception if allow-origin has not been specified.
-            self.set_header("Access-Control-Allow-Origin", self.request.headers.get("Origin", ""))
+            self.set_header(
+                "Access-Control-Allow-Origin", self.request.headers.get("Origin", "")
+            )
 
         if self.allow_credentials:
             self.set_header("Access-Control-Allow-Credentials", "true")
@@ -548,13 +560,13 @@ class JupyterHandler(AuthenticatedHandler):
         if not self.request.body:
             return None
         # Do we need to call body.decode('utf-8') here?
-        body = self.request.body.strip().decode(u"utf-8")
+        body = self.request.body.strip().decode("utf-8")
         try:
             model = json.loads(body)
         except Exception as e:
             self.log.debug("Bad JSON: %r", body)
             self.log.error("Couldn't parse JSON", exc_info=True)
-            raise web.HTTPError(400, u"Invalid JSON in body of request") from e
+            raise web.HTTPError(400, "Invalid JSON in body of request") from e
         return model
 
     def write_error(self, status_code, **kwargs):
@@ -674,9 +686,12 @@ class APIHandler(JupyterHandler):
             )
         else:
             self.set_header(
-                "Access-Control-Allow-Headers", "accept, content-type, authorization, x-xsrftoken"
+                "Access-Control-Allow-Headers",
+                "accept, content-type, authorization, x-xsrftoken",
             )
-        self.set_header("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE, OPTIONS")
+        self.set_header(
+            "Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE, OPTIONS"
+        )
 
         # if authorization header is requested,
         # that means the request is token-authenticated.
@@ -684,9 +699,9 @@ class APIHandler(JupyterHandler):
         # only allow this exception if allow_origin has not been specified
         # and Jupyter server authentication is enabled.
         # If the token is not valid, the 'real' request will still be rejected.
-        requested_headers = self.request.headers.get("Access-Control-Request-Headers", "").split(
-            ","
-        )
+        requested_headers = self.request.headers.get(
+            "Access-Control-Request-Headers", ""
+        ).split(",")
         if (
             requested_headers
             and any(h.strip().lower() == "authorization" for h in requested_headers)
@@ -701,7 +716,9 @@ class APIHandler(JupyterHandler):
                 or "Access-Control-Allow-Origin" in self.settings.get("headers", {})
             )
         ):
-            self.set_header("Access-Control-Allow-Origin", self.request.headers.get("Origin", ""))
+            self.set_header(
+                "Access-Control-Allow-Origin", self.request.headers.get("Origin", "")
+            )
 
 
 class Template404(JupyterHandler):
@@ -730,7 +747,9 @@ class AuthenticatedFileHandler(JupyterHandler, web.StaticFileHandler):
 
     @web.authenticated
     def get(self, path):
-        if os.path.splitext(path)[1] == ".ipynb" or self.get_argument("download", False):
+        if os.path.splitext(path)[1] == ".ipynb" or self.get_argument(
+            "download", False
+        ):
             name = path.rsplit("/", 1)[-1]
             self.set_attachment_header(name)
 
@@ -767,7 +786,9 @@ class AuthenticatedFileHandler(JupyterHandler, web.StaticFileHandler):
 
         Adding to tornado's own handling, forbids the serving of hidden files.
         """
-        abs_path = super(AuthenticatedFileHandler, self).validate_absolute_path(root, absolute_path)
+        abs_path = super(AuthenticatedFileHandler, self).validate_absolute_path(
+            root, absolute_path
+        )
         abs_root = os.path.abspath(root)
         if is_hidden(abs_path, abs_root) and not self.contents_manager.allow_hidden:
             self.log.info(

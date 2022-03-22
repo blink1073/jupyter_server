@@ -30,9 +30,9 @@ def notebook(jp_root_dir):
 
     # Build a notebook programmatically.
     nb = new_notebook()
-    nb.cells.append(new_markdown_cell(u"Created by test ³"))
-    cc1 = new_code_cell(source=u"print(2*6)")
-    cc1.outputs.append(new_output(output_type="stream", text=u"12"))
+    nb.cells.append(new_markdown_cell("Created by test ³"))
+    cc1 = new_code_cell(source="print(2*6)")
+    cc1.outputs.append(new_output(output_type="stream", text="12"))
     cc1.outputs.append(
         new_output(
             output_type="execute_result",
@@ -47,12 +47,19 @@ def notebook(jp_root_dir):
     nbfile.write_text(writes(nb, version=4), encoding="utf-8")
 
 
-pytestmark = pytest.mark.skipif(not which("pandoc"), reason="Command 'pandoc' is not available")
+pytestmark = pytest.mark.skipif(
+    not which("pandoc"), reason="Command 'pandoc' is not available"
+)
 
 
 async def test_from_file(jp_fetch, notebook):
     r = await jp_fetch(
-        "nbconvert", "html", "foo", "testnb.ipynb", method="GET", params={"download": False}
+        "nbconvert",
+        "html",
+        "foo",
+        "testnb.ipynb",
+        method="GET",
+        params={"download": False},
     )
 
     assert r.code == 200
@@ -61,7 +68,12 @@ async def test_from_file(jp_fetch, notebook):
     assert "print" in r.body.decode()
 
     r = await jp_fetch(
-        "nbconvert", "python", "foo", "testnb.ipynb", method="GET", params={"download": False}
+        "nbconvert",
+        "python",
+        "foo",
+        "testnb.ipynb",
+        method="GET",
+        params={"download": False},
     )
 
     assert r.code == 200
@@ -84,7 +96,12 @@ async def test_from_file_404(jp_fetch, notebook):
 
 async def test_from_file_download(jp_fetch, notebook):
     r = await jp_fetch(
-        "nbconvert", "python", "foo", "testnb.ipynb", method="GET", params={"download": True}
+        "nbconvert",
+        "python",
+        "foo",
+        "testnb.ipynb",
+        method="GET",
+        params={"download": True},
     )
     content_disposition = r.headers["Content-Disposition"]
     assert "attachment" in content_disposition
@@ -93,7 +110,12 @@ async def test_from_file_download(jp_fetch, notebook):
 
 async def test_from_file_zip(jp_fetch, notebook):
     r = await jp_fetch(
-        "nbconvert", "latex", "foo", "testnb.ipynb", method="GET", params={"download": True}
+        "nbconvert",
+        "latex",
+        "foo",
+        "testnb.ipynb",
+        method="GET",
+        params={"download": True},
     )
     assert "application/zip" in r.headers["Content-Type"]
     assert ".zip" in r.headers["Content-Disposition"]
@@ -114,7 +136,7 @@ async def test_from_post(jp_fetch, notebook):
 
     r = await jp_fetch("nbconvert", "python", method="POST", body=json.dumps(nbmodel))
     assert r.code == 200
-    assert u"text/x-python" in r.headers["Content-Type"]
+    assert "text/x-python" in r.headers["Content-Type"]
     assert "print(2*6)" in r.body.decode()
 
 

@@ -38,7 +38,9 @@ class MockExtensionApp(ExtensionAppJinjaMixin, ExtensionApp):
     loaded = False
 
     serverapp_config = {
-        "jpserver_extensions": {"jupyter_server.tests.extension.mockextensions.mock1": True}
+        "jpserver_extensions": {
+            "jupyter_server.tests.extension.mockextensions.mock1": True
+        }
     }
 
     @staticmethod

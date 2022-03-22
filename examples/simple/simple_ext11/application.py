@@ -8,8 +8,12 @@ from traitlets import Unicode
 from jupyter_server.serverapp import aliases
 from jupyter_server.serverapp import flags
 
-DEFAULT_STATIC_FILES_PATH = os.path.join(os.path.dirname(__file__), "./../simple_ext1/static")
-DEFAULT_TEMPLATE_FILES_PATH = os.path.join(os.path.dirname(__file__), "./../simple_ext1/templates")
+DEFAULT_STATIC_FILES_PATH = os.path.join(
+    os.path.dirname(__file__), "./../simple_ext1/static"
+)
+DEFAULT_TEMPLATE_FILES_PATH = os.path.join(
+    os.path.dirname(__file__), "./../simple_ext1/templates"
+)
 
 
 class SimpleApp11(SimpleApp1):

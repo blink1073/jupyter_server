@@ -7,10 +7,14 @@ from jupyter_server.utils import url_escape
 class DefaultHandler(ExtensionHandlerMixin, JupyterHandler):
     def get(self):
         # The name of the extension to which this handler is linked.
-        self.log.info("Extension Name in {} Default Handler: {}".format(self.name, self.name))
+        self.log.info(
+            "Extension Name in {} Default Handler: {}".format(self.name, self.name)
+        )
         # A method for getting the url to static files (prefixed with /static/<name>).
         self.log.info(
-            "Static URL for / in simple_ext1 Default Handler: {}".format(self.static_url(path="/"))
+            "Static URL for / in simple_ext1 Default Handler: {}".format(
+                self.static_url(path="/")
+            )
         )
         self.write("<h1>Hello Simple 1 - I am the default...</h1>")
         self.write("Config in {} Default Handler: {}".format(self.name, self.config))
@@ -31,7 +35,9 @@ class ParameterHandler(ExtensionHandlerMixin, JupyterHandler):
         self.write("<p>components: {}</p>".format(components))
 
 
-class BaseTemplateHandler(ExtensionHandlerJinjaMixin, ExtensionHandlerMixin, JupyterHandler):
+class BaseTemplateHandler(
+    ExtensionHandlerJinjaMixin, ExtensionHandlerMixin, JupyterHandler
+):
     pass
 
 
@@ -42,7 +48,7 @@ class TypescriptHandler(BaseTemplateHandler):
 
 class TemplateHandler(BaseTemplateHandler):
     def get(self, path):
-        """ Optionaly, you can print(self.get_template('simple1.html'))"""
+        """Optionaly, you can print(self.get_template('simple1.html'))"""
         self.write(self.render_template("simple1.html", path=path))
 
 

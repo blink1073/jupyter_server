@@ -37,7 +37,9 @@ def http_server_port(jp_unix_socket_file, jp_process_id):
 
 
 @pytest.fixture
-def jp_unix_socket_fetch(jp_unix_socket_file, jp_auth_header, jp_base_url, http_server, io_loop):
+def jp_unix_socket_fetch(
+    jp_unix_socket_file, jp_auth_header, jp_base_url, http_server, io_loop
+):
     """A fetch fixture for Jupyter Server tests that use the unix_serverapp fixture"""
 
     async def client(*parts, headers={}, params={}, **kwargs):

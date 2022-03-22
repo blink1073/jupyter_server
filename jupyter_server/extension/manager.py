@@ -233,7 +233,10 @@ class ExtensionPackage(HasTraits):
             self.link_point(point_name, serverapp)
 
     def load_all_points(self, serverapp):
-        return [self.load_point(point_name, serverapp) for point_name in self.extension_points]
+        return [
+            self.load_point(point_name, serverapp)
+            for point_name in self.extension_points
+        ]
 
 
 class ExtensionManager(LoggingConfigurable):
@@ -291,7 +294,9 @@ class ExtensionManager(LoggingConfigurable):
     def extension_apps(self):
         """Return mapping of extension names and sets of ExtensionApp objects."""
         return {
-            name: {point.app for point in extension.extension_points.values() if point.app}
+            name: {
+                point.app for point in extension.extension_points.values() if point.app
+            }
             for name, extension in self.extensions.items()
         }
 
@@ -342,7 +347,9 @@ class ExtensionManager(LoggingConfigurable):
                 # Link extension and store links
                 extension.link_all_points(self.serverapp)
                 self.linked_extensions[name] = True
-                self.log.info("{name} | extension was successfully linked.".format(name=name))
+                self.log.info(
+                    "{name} | extension was successfully linked.".format(name=name)
+                )
             except Exception as e:
                 if self.serverapp.reraise_server_extension_failures:
                     raise
@@ -364,7 +371,9 @@ class ExtensionManager(LoggingConfigurable):
                     )
                 )
             else:
-                self.log.info("{name} | extension was successfully loaded.".format(name=name))
+                self.log.info(
+                    "{name} | extension was successfully loaded.".format(name=name)
+                )
 
     async def stop_extension(self, name, apps):
         """Call the shutdown hooks in the specified apps."""

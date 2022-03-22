@@ -143,7 +143,8 @@ class MappingKernelManager(MultiKernelManager):
         return defaultdict(lambda: {"buffer": [], "session_key": "", "channels": {}})
 
     last_kernel_activity = Instance(
-        datetime, help="The last activity on any kernel, including shutting down a kernel"
+        datetime,
+        help="The last activity on any kernel, including shutting down a kernel",
     )
 
     def __init__(self, **kwargs):
@@ -166,7 +167,9 @@ class MappingKernelManager(MultiKernelManager):
     traceback_replacement_message = Unicode(
         "An exception occurred at runtime, which is not shown due to security reasons.",
         config=True,
-        help=("Message to print when allow_tracebacks is False, and an exception occurs"),
+        help=(
+            "Message to print when allow_tracebacks is False, and an exception occurs"
+        ),
     )
 
     # -------------------------------------------------------------------------
@@ -208,7 +211,9 @@ class MappingKernelManager(MultiKernelManager):
                 kwargs["cwd"] = self.cwd_for_path(path)
             if kernel_id is not None:
                 kwargs["kernel_id"] = kernel_id
-            kernel_id = await ensure_async(self.pinned_superclass.start_kernel(self, **kwargs))
+            kernel_id = await ensure_async(
+                self.pinned_superclass.start_kernel(self, **kwargs)
+            )
             self._kernel_connections[kernel_id] = 0
             fut = asyncio.ensure_future(self._finish_kernel_start(kernel_id))
             if not getattr(self, "use_pending_kernels", None):
@@ -223,7 +228,9 @@ class MappingKernelManager(MultiKernelManager):
 
             # Increase the metric of number of kernels running
             # for the relevant kernel type by 1
-            KERNEL_CURRENTLY_RUNNING_TOTAL.labels(type=self._kernels[kernel_id].kernel_name).inc()
+            KERNEL_CURRENTLY_RUNNING_TOTAL.labels(
+                type=self._kernels[kernel_id].kernel_name
+            ).inc()
 
         else:
             self.log.info("Using existing kernel: %s" % kernel_id)
@@ -387,9 +394,13 @@ class MappingKernelManager(MultiKernelManager):
 
         # Decrease the metric of number of kernels
         # running for the relevant kernel type by 1
-        KERNEL_CURRENTLY_RUNNING_TOTAL.labels(type=self._kernels[kernel_id].kernel_name).dec()
+        KERNEL_CURRENTLY_RUNNING_TOTAL.labels(
+            type=self._kernels[kernel_id].kernel_name
+        ).dec()
 
-        self.pinned_superclass.shutdown_kernel(self, kernel_id, now=now, restart=restart)
+        self.pinned_superclass.shutdown_kernel(
+            self, kernel_id, now=now, restart=restart
+        )
         # Unlike its async sibling method in AsyncMappingKernelManager, removing the kernel_id
         # from the connections dictionary isn't as problematic before the shutdown since the
         # method is synchronous.  However, we'll keep the relative call orders the same from
@@ -400,7 +411,9 @@ class MappingKernelManager(MultiKernelManager):
     async def restart_kernel(self, kernel_id, now=False):
         """Restart a kernel by kernel_id"""
         self._check_kernel_id(kernel_id)
-        await ensure_async(self.pinned_superclass.restart_kernel(self, kernel_id, now=now))
+        await ensure_async(
+            self.pinned_superclass.restart_kernel(self, kernel_id, now=now)
+        )
         kernel = self.get_kernel(kernel_id)
         # return a Future that will resolve when the kernel has successfully restarted
         channel = kernel.connect_shell()
@@ -519,7 +532,10 @@ class MappingKernelManager(MultiKernelManager):
             if msg_type == "status":
                 kernel.execution_state = msg["content"]["execution_state"]
                 self.log.debug(
-                    "activity on %s: %s (%s)", kernel_id, msg_type, kernel.execution_state
+                    "activity on %s: %s (%s)",
+                    kernel_id,
+                    msg_type,
+                    kernel.execution_state,
                 )
             else:
                 self.log.debug("activity on %s: %s", kernel_id, msg_type)
@@ -644,7 +660,9 @@ class AsyncMappingKernelManager(MappingKernelManager, AsyncMultiKernelManager):
 
         # Decrease the metric of number of kernels
         # running for the relevant kernel type by 1
-        KERNEL_CURRENTLY_RUNNING_TOTAL.labels(type=self._kernels[kernel_id].kernel_name).dec()
+        KERNEL_CURRENTLY_RUNNING_TOTAL.labels(
+            type=self._kernels[kernel_id].kernel_name
+        ).dec()
 
         # Finish shutting down the kernel before clearing state to avoid a race condition.
         ret = await self.pinned_superclass.shutdown_kernel(

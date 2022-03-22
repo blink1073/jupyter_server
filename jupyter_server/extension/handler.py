@@ -99,7 +99,9 @@ class ExtensionHandlerMixin:
             else:
                 raise e
 
-        get_url = self.settings.get("static_handler_class", FileFindHandler).make_static_url
+        get_url = self.settings.get(
+            "static_handler_class", FileFindHandler
+        ).make_static_url
 
         if include_host is None:
             include_host = getattr(self, "include_host", False)
@@ -111,6 +113,9 @@ class ExtensionHandlerMixin:
 
         # Hijack settings dict to send extension templates to extension
         # static directory.
-        settings = {"static_path": self.static_path, "static_url_prefix": self.static_url_prefix}
+        settings = {
+            "static_path": self.static_path,
+            "static_url_prefix": self.static_url_prefix,
+        }
 
         return base + get_url(settings, path, **kwargs)

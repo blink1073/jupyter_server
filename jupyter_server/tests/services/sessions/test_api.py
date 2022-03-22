@@ -24,8 +24,12 @@ class NewPortsKernelManager(AsyncIOLoopKernelManager):
     def _default_cache_ports(self) -> bool:
         return False
 
-    async def restart_kernel(self, now: bool = False, newports: bool = True, **kw) -> None:
-        self.log.debug(f"DEBUG**** calling super().restart_kernel with newports={newports}")
+    async def restart_kernel(
+        self, now: bool = False, newports: bool = True, **kw
+    ) -> None:
+        self.log.debug(
+            f"DEBUG**** calling super().restart_kernel with newports={newports}"
+        )
         return await super().restart_kernel(now=now, newports=newports, **kw)
 
 
@@ -37,7 +41,11 @@ class NewPortsMappingKernelManager(AsyncMappingKernelManager):
 
 
 @pytest.fixture(
-    params=["MappingKernelManager", "AsyncMappingKernelManager", "NewPortsMappingKernelManager"]
+    params=[
+        "MappingKernelManager",
+        "AsyncMappingKernelManager",
+        "NewPortsMappingKernelManager",
+    ]
 )
 def jp_argv(request):
     if request.param == "NewPortsMappingKernelManager":
@@ -63,7 +71,12 @@ class SessionClient:
             body = json.dumps(body)
 
         r = await self.jp_fetch(
-            "api", "sessions", *args, method=method, body=body, allow_nonstandard_methods=True
+            "api",
+            "sessions",
+            *args,
+            method=method,
+            body=body,
+            allow_nonstandard_methods=True,
         )
         return r
 
@@ -74,7 +87,11 @@ class SessionClient:
         return await self._req(id, method="GET")
 
     async def create(self, path, type="notebook", kernel_name=None, kernel_id=None):
-        body = {"path": path, "type": type, "kernel": {"name": kernel_name, "id": kernel_id}}
+        body = {
+            "path": path,
+            "type": type,
+            "kernel": {"name": kernel_name, "id": kernel_id},
+        }
         return await self._req(method="POST", body=body)
 
     def create_deprecated(self, path):
@@ -156,7 +173,9 @@ def assert_session_equality(actual, expected):
     assert_kernel_equality(actual["kernel"], expected["kernel"])
 
 
-async def test_create(session_client, jp_base_url, jp_cleanup_subprocesses, jp_serverapp):
+async def test_create(
+    session_client, jp_base_url, jp_cleanup_subprocesses, jp_serverapp
+):
     # Make sure no sessions exist.
     resp = await session_client.list()
     sessions = j(resp)
@@ -223,7 +242,12 @@ async def test_create_bad(
 
 
 async def test_create_bad_pending(
-    session_client, jp_base_url, jp_ws_fetch, jp_cleanup_subprocesses, jp_serverapp, jp_kernelspecs
+    session_client,
+    jp_base_url,
+    jp_ws_fetch,
+    jp_cleanup_subprocesses,
+    jp_serverapp,
+    jp_kernelspecs,
 ):
     if not getattr(jp_serverapp.kernel_manager, "use_pending_kernels", False):
         return
@@ -255,7 +279,9 @@ async def test_create_bad_pending(
     await jp_cleanup_subprocesses()
 
 
-async def test_create_file_session(session_client, jp_cleanup_subprocesses, jp_serverapp):
+async def test_create_file_session(
+    session_client, jp_cleanup_subprocesses, jp_serverapp
+):
     resp = await session_client.create("foo/nb1.py", type="file")
     assert resp.code == 201
     newsession = j(resp)
@@ -265,7 +291,9 @@ async def test_create_file_session(session_client, jp_cleanup_subprocesses, jp_s
     await jp_cleanup_subprocesses()
 
 
-async def test_create_console_session(session_client, jp_cleanup_subprocesses, jp_serverapp):
+async def test_create_console_session(
+    session_client, jp_cleanup_subprocesses, jp_serverapp
+):
     resp = await session_client.create("foo/abc123", type="console")
     assert resp.code == 201
     newsession = j(resp)
@@ -320,7 +348,9 @@ async def test_create_with_kernel_id(
     await jp_cleanup_subprocesses()
 
 
-async def test_create_with_bad_kernel_id(session_client, jp_cleanup_subprocesses, jp_serverapp):
+async def test_create_with_bad_kernel_id(
+    session_client, jp_cleanup_subprocesses, jp_serverapp
+):
     resp = await session_client.create("foo/nb1.py", type="file")
     assert resp.code == 201
     newsession = j(resp)
@@ -365,7 +395,9 @@ async def test_modify_path(session_client, jp_cleanup_subprocesses, jp_serverapp
     await jp_cleanup_subprocesses()
 
 
-async def test_modify_path_deprecated(session_client, jp_cleanup_subprocesses, jp_serverapp):
+async def test_modify_path_deprecated(
+    session_client, jp_cleanup_subprocesses, jp_serverapp
+):
     resp = await session_client.create("foo/nb1.ipynb")
     newsession = j(resp)
     sid = newsession["id"]
@@ -393,7 +425,9 @@ async def test_modify_type(session_client, jp_cleanup_subprocesses, jp_serverapp
     await jp_cleanup_subprocesses()
 
 
-async def test_modify_kernel_name(session_client, jp_fetch, jp_cleanup_subprocesses, jp_serverapp):
+async def test_modify_kernel_name(
+    session_client, jp_fetch, jp_cleanup_subprocesses, jp_serverapp
+):
     resp = await session_client.create("foo/nb1.ipynb")
     before = j(resp)
     sid = before["id"]
@@ -418,7 +452,9 @@ async def test_modify_kernel_name(session_client, jp_fetch, jp_cleanup_subproces
     await jp_cleanup_subprocesses()
 
 
-async def test_modify_kernel_id(session_client, jp_fetch, jp_cleanup_subprocesses, jp_serverapp):
+async def test_modify_kernel_id(
+    session_client, jp_fetch, jp_cleanup_subprocesses, jp_serverapp
+):
     resp = await session_client.create("foo/nb1.ipynb")
     before = j(resp)
     sid = before["id"]

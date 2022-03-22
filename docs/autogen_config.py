@@ -36,7 +36,9 @@ enter::
 
 """
 try:
-    destination = os.path.join(os.path.dirname(__file__), "source/other/full-config.rst")
+    destination = os.path.join(
+        os.path.dirname(__file__), "source/other/full-config.rst"
+    )
 except:
     destination = os.path.join(os.getcwd(), "full-config.rst")
 

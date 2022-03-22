@@ -42,7 +42,7 @@ def validate_model(model, expect_content):
     if missing:
         raise web.HTTPError(
             500,
-            u"Missing Model Keys: {missing}".format(missing=missing),
+            "Missing Model Keys: {missing}".format(missing=missing),
         )
 
     maybe_none_keys = ["content", "format"]
@@ -51,14 +51,14 @@ def validate_model(model, expect_content):
         if errors:
             raise web.HTTPError(
                 500,
-                u"Keys unexpectedly None: {keys}".format(keys=errors),
+                "Keys unexpectedly None: {keys}".format(keys=errors),
             )
     else:
         errors = {key: model[key] for key in maybe_none_keys if model[key] is not None}
         if errors:
             raise web.HTTPError(
                 500,
-                u"Keys unexpectedly not None: {keys}".format(keys=errors),
+                "Keys unexpectedly not None: {keys}".format(keys=errors),
             )
 
 
@@ -92,14 +92,14 @@ class ContentsHandler(APIHandler):
         path = path or ""
         type = self.get_query_argument("type", default=None)
         if type not in {None, "directory", "file", "notebook"}:
-            raise web.HTTPError(400, u"Type %r is invalid" % type)
+            raise web.HTTPError(400, "Type %r is invalid" % type)
 
         format = self.get_query_argument("format", default=None)
         if format not in {None, "text", "base64"}:
-            raise web.HTTPError(400, u"Format %r is invalid" % format)
+            raise web.HTTPError(400, "Format %r is invalid" % format)
         content = self.get_query_argument("content", default="1")
         if content not in {"0", "1"}:
-            raise web.HTTPError(400, u"Content %r is invalid" % content)
+            raise web.HTTPError(400, "Content %r is invalid" % content)
         content = int(content)
 
         model = await ensure_async(
@@ -119,7 +119,7 @@ class ContentsHandler(APIHandler):
         cm = self.contents_manager
         model = self.get_json_body()
         if model is None:
-            raise web.HTTPError(400, u"JSON body missing")
+            raise web.HTTPError(400, "JSON body missing")
         model = await ensure_async(cm.update(model, path))
         validate_model(model, expect_content=False)
         self._finish_model(model)
@@ -127,7 +127,7 @@ class ContentsHandler(APIHandler):
     async def _copy(self, copy_from, copy_to=None):
         """Copy a file, optionally specifying a target directory."""
         self.log.info(
-            u"Copying {copy_from} to {copy_to}".format(
+            "Copying {copy_from} to {copy_to}".format(
                 copy_from=copy_from,
                 copy_to=copy_to or "",
             )
@@ -139,7 +139,7 @@ class ContentsHandler(APIHandler):
 
     async def _upload(self, model, path):
         """Handle upload of a new file to path"""
-        self.log.info(u"Uploading file to %s", path)
+        self.log.info("Uploading file to %s", path)
         model = await ensure_async(self.contents_manager.new(model, path))
         self.set_status(201)
         validate_model(model, expect_content=False)
@@ -147,7 +147,7 @@ class ContentsHandler(APIHandler):
 
     async def _new_untitled(self, path, type="", ext=""):
         """Create a new, empty untitled entity"""
-        self.log.info(u"Creating new %s in %s", type or "file", path)
+        self.log.info("Creating new %s in %s", type or "file", path)
         model = await ensure_async(
             self.contents_manager.new_untitled(path=path, type=type, ext=ext)
         )
@@ -159,7 +159,7 @@ class ContentsHandler(APIHandler):
         """Save an existing file."""
         chunk = model.get("chunk", None)
         if not chunk or chunk == -1:  # Avoid tedious log information
-            self.log.info(u"Saving file at %s", path)
+            self.log.info("Saving file at %s", path)
         model = await ensure_async(self.contents_manager.save(model, path))
         validate_model(model, expect_content=False)
         self._finish_model(model)
@@ -292,7 +292,7 @@ class NotebooksRedirectHandler(JupyterHandler):
 
 
 class TrustNotebooksHandler(JupyterHandler):
-    """ Handles trust/signing of notebooks """
+    """Handles trust/signing of notebooks"""
 
     @web.authenticated
     async def post(self, path=""):

@@ -30,7 +30,9 @@ def kernelspec_model(handler, name, spec_dict, resource_dir):
     for logo_file in glob.glob(pjoin(resource_dir, "logo-*")):
         fname = os.path.basename(logo_file)
         no_ext, _ = os.path.splitext(fname)
-        d["resources"][no_ext] = url_path_join(handler.base_url, "kernelspecs", name, fname)
+        d["resources"][no_ext] = url_path_join(
+            handler.base_url, "kernelspecs", name, fname
+        )
     return d
 
 
@@ -59,10 +61,15 @@ class MainKernelSpecHandler(APIHandler):
                     d = kernel_info
                 else:
                     d = kernelspec_model(
-                        self, kernel_name, kernel_info["spec"], kernel_info["resource_dir"]
+                        self,
+                        kernel_name,
+                        kernel_info["spec"],
+                        kernel_info["resource_dir"],
                     )
             except Exception:
-                self.log.error("Failed to load kernel spec: '%s'", kernel_name, exc_info=True)
+                self.log.error(
+                    "Failed to load kernel spec: '%s'", kernel_name, exc_info=True
+                )
                 continue
             specs[kernel_name] = d
         self.set_header("Content-Type", "application/json")
@@ -77,11 +84,13 @@ class KernelSpecHandler(APIHandler):
         try:
             spec = await ensure_async(ksm.get_kernel_spec(kernel_name))
         except KeyError as e:
-            raise web.HTTPError(404, u"Kernel spec %s not found" % kernel_name) from e
+            raise web.HTTPError(404, "Kernel spec %s not found" % kernel_name) from e
         if is_kernelspec_model(spec):
             model = spec
         else:
-            model = kernelspec_model(self, kernel_name, spec.to_dict(), spec.resource_dir)
+            model = kernelspec_model(
+                self, kernel_name, spec.to_dict(), spec.resource_dir
+            )
         self.set_header("Content-Type", "application/json")
         self.finish(json.dumps(model))
 

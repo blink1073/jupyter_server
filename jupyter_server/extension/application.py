@@ -96,7 +96,9 @@ class ExtensionAppJinjaMixin(HasTraits):
         self.initialize_templates()
         # Add templates to web app settings if extension has templates.
         if len(self.template_paths) > 0:
-            self.settings.update({"{}_template_paths".format(self.name): self.template_paths})
+            self.settings.update(
+                {"{}_template_paths".format(self.name): self.template_paths}
+            )
 
         # Create a jinja environment for logging html templates.
         self.jinja2_env = Environment(
@@ -211,7 +213,7 @@ class ExtensionApp(JupyterApp):
     @default("log_format")
     def _default_log_format(self):
         """override default log format to include date & time"""
-        return u"%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s]%(end_color)s %(message)s"
+        return "%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s]%(end_color)s %(message)s"
 
     static_url_prefix = Unicode(
         help="""Url where the static assets for the extension are served."""
@@ -240,7 +242,9 @@ class ExtensionApp(JupyterApp):
         ),
     ).tag(config=True)
 
-    settings = Dict(help=_i18n("""Settings that will passed to the server.""")).tag(config=True)
+    settings = Dict(help=_i18n("""Settings that will passed to the server.""")).tag(
+        config=True
+    )
 
     handlers = List(help=_i18n("""Handlers appended to the server.""")).tag(config=True)
 
@@ -333,7 +337,9 @@ class ExtensionApp(JupyterApp):
     def _prepare_templates(self):
         # Add templates to web app settings if extension has templates.
         if len(self.template_paths) > 0:
-            self.settings.update({"{}_template_paths".format(self.name): self.template_paths})
+            self.settings.update(
+                {"{}_template_paths".format(self.name): self.template_paths}
+            )
         self.initialize_templates()
 
     def _jupyter_server_config(self):
@@ -452,7 +458,11 @@ class ExtensionApp(JupyterApp):
                 (
                     r"/static/favicons/favicon.ico",
                     RedirectHandler,
-                    {"url": url_path_join(serverapp.base_url, "static/base/images/favicon.ico")},
+                    {
+                        "url": url_path_join(
+                            serverapp.base_url, "static/base/images/favicon.ico"
+                        )
+                    },
                 ),
                 (
                     r"/static/favicons/favicon-busy-1.ico",
@@ -495,7 +505,8 @@ class ExtensionApp(JupyterApp):
                     RedirectHandler,
                     {
                         "url": url_path_join(
-                            serverapp.base_url, "static/base/images/favicon-notebook.ico"
+                            serverapp.base_url,
+                            "static/base/images/favicon-notebook.ico",
                         )
                     },
                 ),
@@ -504,14 +515,19 @@ class ExtensionApp(JupyterApp):
                     RedirectHandler,
                     {
                         "url": url_path_join(
-                            serverapp.base_url, "static/base/images/favicon-terminal.ico"
+                            serverapp.base_url,
+                            "static/base/images/favicon-terminal.ico",
                         )
                     },
                 ),
                 (
                     r"/static/logo/logo.png",
                     RedirectHandler,
-                    {"url": url_path_join(serverapp.base_url, "static/base/images/logo.png")},
+                    {
+                        "url": url_path_join(
+                            serverapp.base_url, "static/base/images/logo.png"
+                        )
+                    },
                 ),
             ]
         )
@@ -532,7 +548,9 @@ class ExtensionApp(JupyterApp):
             jpserver_extensions.update(cls.serverapp_config["jpserver_extensions"])
             cls.serverapp_config["jpserver_extensions"] = jpserver_extensions
             find_extensions = False
-        serverapp = ServerApp.instance(jpserver_extensions=jpserver_extensions, **kwargs)
+        serverapp = ServerApp.instance(
+            jpserver_extensions=jpserver_extensions, **kwargs
+        )
         serverapp.aliases.update(cls.aliases)
         serverapp.initialize(
             argv=argv,

@@ -19,16 +19,16 @@ class LargeFileManager(FileContentsManager):
             path = path.strip("/")
 
             if "type" not in model:
-                raise web.HTTPError(400, u"No file type provided")
+                raise web.HTTPError(400, "No file type provided")
             if model["type"] != "file":
                 raise web.HTTPError(
                     400,
-                    u'File type "{}" is not supported for large file transfer'.format(
+                    'File type "{}" is not supported for large file transfer'.format(
                         model["type"]
                     ),
                 )
             if "content" not in model and model["type"] != "directory":
-                raise web.HTTPError(400, u"No file content provided")
+                raise web.HTTPError(400, "No file content provided")
 
             os_path = self._get_os_path(path)
 
@@ -40,13 +40,15 @@ class LargeFileManager(FileContentsManager):
                         os_path, model["content"], model.get("format")
                     )
                 else:
-                    self._save_large_file(os_path, model["content"], model.get("format"))
+                    self._save_large_file(
+                        os_path, model["content"], model.get("format")
+                    )
             except web.HTTPError:
                 raise
             except Exception as e:
-                self.log.error(u"Error while saving file: %s %s", path, e, exc_info=True)
+                self.log.error("Error while saving file: %s %s", path, e, exc_info=True)
                 raise web.HTTPError(
-                    500, u"Unexpected error while saving file: %s %s" % (path, e)
+                    500, "Unexpected error while saving file: %s %s" % (path, e)
                 ) from e
 
             model = self.get(path, content=False)
@@ -72,7 +74,9 @@ class LargeFileManager(FileContentsManager):
                 b64_bytes = content.encode("ascii")
                 bcontent = base64.b64decode(b64_bytes)
         except Exception as e:
-            raise web.HTTPError(400, u"Encoding error saving %s: %s" % (os_path, e)) from e
+            raise web.HTTPError(
+                400, "Encoding error saving %s: %s" % (os_path, e)
+            ) from e
 
         with self.perm_to_403(os_path):
             if os.path.islink(os_path):
@@ -91,16 +95,16 @@ class AsyncLargeFileManager(AsyncFileContentsManager):
             path = path.strip("/")
 
             if "type" not in model:
-                raise web.HTTPError(400, u"No file type provided")
+                raise web.HTTPError(400, "No file type provided")
             if model["type"] != "file":
                 raise web.HTTPError(
                     400,
-                    u'File type "{}" is not supported for large file transfer'.format(
+                    'File type "{}" is not supported for large file transfer'.format(
                         model["type"]
                     ),
                 )
             if "content" not in model and model["type"] != "directory":
-                raise web.HTTPError(400, u"No file content provided")
+                raise web.HTTPError(400, "No file content provided")
 
             os_path = self._get_os_path(path)
 
@@ -112,13 +116,15 @@ class AsyncLargeFileManager(AsyncFileContentsManager):
                         os_path, model["content"], model.get("format")
                     )
                 else:
-                    await self._save_large_file(os_path, model["content"], model.get("format"))
+                    await self._save_large_file(
+                        os_path, model["content"], model.get("format")
+                    )
             except web.HTTPError:
                 raise
             except Exception as e:
-                self.log.error(u"Error while saving file: %s %s", path, e, exc_info=True)
+                self.log.error("Error while saving file: %s %s", path, e, exc_info=True)
                 raise web.HTTPError(
-                    500, u"Unexpected error while saving file: %s %s" % (path, e)
+                    500, "Unexpected error while saving file: %s %s" % (path, e)
                 ) from e
 
             model = await self.get(path, content=False)
@@ -144,7 +150,9 @@ class AsyncLargeFileManager(AsyncFileContentsManager):
                 b64_bytes = content.encode("ascii")
                 bcontent = base64.b64decode(b64_bytes)
         except Exception as e:
-            raise web.HTTPError(400, u"Encoding error saving %s: %s" % (os_path, e)) from e
+            raise web.HTTPError(
+                400, "Encoding error saving %s: %s" % (os_path, e)
+            ) from e
 
         with self.perm_to_403(os_path):
             if os.path.islink(os_path):

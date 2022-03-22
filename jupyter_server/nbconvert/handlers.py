@@ -39,7 +39,9 @@ def respond_zip(handler, name, output, resources):
     zip_filename = os.path.splitext(name)[0] + ".zip"
     handler.set_attachment_header(zip_filename)
     handler.set_header("Content-Type", "application/zip")
-    handler.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+    handler.set_header(
+        "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"
+    )
 
     # Prepare the zip file
     buffer = io.BytesIO()
@@ -66,7 +68,7 @@ def get_exporter(format, **kwargs):
         Exporter = get_exporter(format)
     except KeyError as e:
         # should this be 400?
-        raise web.HTTPError(404, u"No exporter for format: %s" % format) from e
+        raise web.HTTPError(404, "No exporter for format: %s" % format) from e
 
     try:
         return Exporter(**kwargs)
@@ -131,9 +133,13 @@ class NbconvertFileHandler(JupyterHandler):
 
         # MIME type
         if exporter.output_mimetype:
-            self.set_header("Content-Type", "%s; charset=utf-8" % exporter.output_mimetype)
+            self.set_header(
+                "Content-Type", "%s; charset=utf-8" % exporter.output_mimetype
+            )
 
-        self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.set_header(
+            "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"
+        )
         self.finish(output)
 
 
@@ -167,7 +173,9 @@ class NbconvertPostHandler(JupyterHandler):
 
         # MIME type
         if exporter.output_mimetype:
-            self.set_header("Content-Type", "%s; charset=utf-8" % exporter.output_mimetype)
+            self.set_header(
+                "Content-Type", "%s; charset=utf-8" % exporter.output_mimetype
+            )
 
         self.finish(output)
 
