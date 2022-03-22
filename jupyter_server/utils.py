@@ -10,7 +10,6 @@ import socket
 import sys
 from _frozen_importlib_external import _NamespacePath
 from contextlib import contextmanager
-from distutils.version import LooseVersion
 from urllib.parse import quote
 from urllib.parse import SplitResult
 from urllib.parse import unquote
@@ -20,6 +19,7 @@ from urllib.parse import urlsplit
 from urllib.parse import urlunsplit
 from urllib.request import pathname2url  # pylint: disable=unused-import
 
+from distutils.version import LooseVersion
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httpclient import HTTPClient
 from tornado.httpclient import HTTPRequest
