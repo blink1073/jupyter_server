@@ -6,8 +6,6 @@ import errno
 import importlib.util
 import inspect
 import os
-
-
 import socket
 import sys
 from _frozen_importlib_external import _NamespacePath
