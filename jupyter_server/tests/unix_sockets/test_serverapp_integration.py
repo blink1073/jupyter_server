@@ -46,15 +46,11 @@ def test_shutdown_sock_server_integration(jp_unix_socket_file):
     else:
         raise AssertionError("expected stop command to fail due to target mis-match")
 
-    assert encoded_sock_path.encode() in subprocess.check_output(
-        ["jupyter-server", "list"]
-    )
+    assert encoded_sock_path.encode() in subprocess.check_output(["jupyter-server", "list"])
 
     subprocess.check_output(["jupyter-server", "stop", jp_unix_socket_file])
 
-    assert encoded_sock_path.encode() not in subprocess.check_output(
-        ["jupyter-server", "list"]
-    )
+    assert encoded_sock_path.encode() not in subprocess.check_output(["jupyter-server", "list"])
 
     p.wait()
 
@@ -69,9 +65,7 @@ def test_sock_server_validate_sockmode_type():
     except subprocess.CalledProcessError as e:
         assert "badbadbad" in e.output.decode()
     else:
-        raise AssertionError(
-            "expected execution to fail due to validation of --sock-mode param"
-        )
+        raise AssertionError("expected execution to fail due to validation of --sock-mode param")
 
 
 @pytest.mark.integration_test
@@ -84,9 +78,7 @@ def test_sock_server_validate_sockmode_accessible():
     except subprocess.CalledProcessError as e:
         assert "0444" in e.output.decode()
     else:
-        raise AssertionError(
-            "expected execution to fail due to validation of --sock-mode param"
-        )
+        raise AssertionError("expected execution to fail due to validation of --sock-mode param")
 
 
 def _ensure_stopped(check_msg="There are no running servers"):
@@ -127,9 +119,7 @@ def test_stop_multi_integration(jp_unix_socket_file, jp_http_port):
 
     assert (
         MSG_TMPL.format(jp_unix_socket_file)
-        in subprocess.check_output(
-            ["jupyter-server", "stop", jp_unix_socket_file]
-        ).decode()
+        in subprocess.check_output(["jupyter-server", "stop", jp_unix_socket_file]).decode()
     )
 
     assert (

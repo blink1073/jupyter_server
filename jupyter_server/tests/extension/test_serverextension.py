@@ -1,11 +1,10 @@
 from collections import OrderedDict
 
 import pytest
-from traitlets.tests.utils import check_help_all_output
-
 from jupyter_server.config_manager import BaseJSONConfigManager
 from jupyter_server.extension.serverextension import _get_config_dir
 from jupyter_server.extension.serverextension import toggle_server_extension_python
+from traitlets.tests.utils import check_help_all_output
 
 
 # Use ServerApps environment because it monkeypatches
@@ -42,9 +41,7 @@ def test_disable(jp_env_config_path, jp_extension_environ):
     assert not config["mock1"]
 
 
-def test_merge_config(
-    jp_env_config_path, jp_configurable_serverapp, jp_extension_environ
-):
+def test_merge_config(jp_env_config_path, jp_configurable_serverapp, jp_extension_environ):
     # Toggle each extension module with a JSON config file
     # at the sys-prefix config dir.
     toggle_server_extension_python(

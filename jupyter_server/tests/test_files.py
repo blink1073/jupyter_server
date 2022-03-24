@@ -70,9 +70,7 @@ async def test_contents_manager(jp_fetch, jp_serverapp, jp_root_dir):
             ),
         ]
     )
-    jp_root_dir.joinpath("testnb.ipynb").write_text(
-        writes(nb, version=4), encoding="utf-8"
-    )
+    jp_root_dir.joinpath("testnb.ipynb").write_text(writes(nb, version=4), encoding="utf-8")
     jp_root_dir.joinpath("test.bin").write_bytes(b"\xff" + os.urandom(5))
     jp_root_dir.joinpath("test.txt").write_text("foobar")
 

@@ -54,9 +54,7 @@ class SessionManager(LoggingConfigurable):
                 raise TraitError("The given file is not an SQLite database file.")
         return value
 
-    kernel_manager = Instance(
-        "jupyter_server.services.kernels.kernelmanager.MappingKernelManager"
-    )
+    kernel_manager = Instance("jupyter_server.services.kernels.kernelmanager.MappingKernelManager")
     contents_manager = InstanceFromClasses(
         [
             "jupyter_server.services.contents.manager.ContentsManager",
@@ -85,9 +83,7 @@ class SessionManager(LoggingConfigurable):
         """Start a database connection"""
         if self._connection is None:
             # Set isolation level to None to autocommit all changes to the database.
-            self._connection = sqlite3.connect(
-                self.database_filepath, isolation_level=None
-            )
+            self._connection = sqlite3.connect(self.database_filepath, isolation_level=None)
             self._connection.row_factory = sqlite3.Row
         return self._connection
 
@@ -146,9 +142,7 @@ class SessionManager(LoggingConfigurable):
         )
         return kernel_id
 
-    async def save_session(
-        self, session_id, path=None, name=None, type=None, kernel_id=None
-    ):
+    async def save_session(self, session_id, path=None, name=None, type=None, kernel_id=None):
         """Saves the items for the session with the given session_id
 
         Given a session_id (and any other of the arguments), this method
@@ -270,9 +264,7 @@ class SessionManager(LoggingConfigurable):
             # If caller wishes to tolerate culled kernels, log a warning
             # and return None.  Otherwise, raise KeyError with a similar
             # message.
-            self.cursor.execute(
-                "DELETE FROM session WHERE session_id=?", (row["session_id"],)
-            )
+            self.cursor.execute("DELETE FROM session WHERE session_id=?", (row["session_id"],))
             msg = (
                 "Kernel '{kernel_id}' appears to have been culled or died unexpectedly, "
                 "invalidating session '{session_id}'. The session has been removed.".format(
@@ -284,9 +276,7 @@ class SessionManager(LoggingConfigurable):
                 return
             raise KeyError(msg)
 
-        kernel_model = await ensure_async(
-            self.kernel_manager.kernel_model(row["kernel_id"])
-        )
+        kernel_model = await ensure_async(self.kernel_manager.kernel_model(row["kernel_id"]))
         model = {
             "id": row["session_id"],
             "path": row["path"],

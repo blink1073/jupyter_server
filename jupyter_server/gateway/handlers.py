@@ -71,9 +71,7 @@ class WebSocketChannelsHandler(WebSocketHandler, JupyterHandler):
     async def get(self, kernel_id, *args, **kwargs):
         self.authenticate()
         self.kernel_id = cast_unicode(kernel_id, "ascii")
-        await super(WebSocketChannelsHandler, self).get(
-            kernel_id=kernel_id, *args, **kwargs
-        )
+        await super(WebSocketChannelsHandler, self).get(kernel_id=kernel_id, *args, **kwargs)
 
     def send_ping(self):
         if self.ws_connection is None and self.ping_callback is not None:
@@ -84,9 +82,7 @@ class WebSocketChannelsHandler(WebSocketHandler, JupyterHandler):
 
     def open(self, kernel_id, *args, **kwargs):
         """Handle web socket connection open to notebook server and delegate to gateway web socket handler"""
-        self.ping_callback = PeriodicCallback(
-            self.send_ping, GATEWAY_WS_PING_INTERVAL_SECS * 1000
-        )
+        self.ping_callback = PeriodicCallback(self.send_ping, GATEWAY_WS_PING_INTERVAL_SECS * 1000)
         self.ping_callback.start()
 
         self.gateway.on_open(
@@ -106,9 +102,7 @@ class WebSocketChannelsHandler(WebSocketHandler, JupyterHandler):
                 binary = True
             super(WebSocketChannelsHandler, self).write_message(message, binary=binary)
         elif self.log.isEnabledFor(logging.DEBUG):
-            msg_summary = WebSocketChannelsHandler._get_message_summary(
-                json_decode(utf8(message))
-            )
+            msg_summary = WebSocketChannelsHandler._get_message_summary(json_decode(utf8(message)))
             self.log.debug(
                 "Notebook client closed websocket connection - message dropped: {}".format(
                     msg_summary
@@ -172,9 +166,7 @@ class GatewayWebSocketClient(LoggingConfigurable):
         self.ws_future.add_done_callback(self._connection_done)
 
         loop = IOLoop.current()
-        loop.add_future(
-            self.ws_future, lambda future: self._read_messages(message_callback)
-        )
+        loop.add_future(self.ws_future, lambda future: self._read_messages(message_callback))
 
     def _connection_done(self, fut):
         if (
@@ -200,9 +192,7 @@ class GatewayWebSocketClient(LoggingConfigurable):
             # Cancel pending connection.  Since future.cancel() is a noop on tornado, we'll track cancellation locally
             self.ws_future.cancel()
             self.log.debug(
-                "_disconnect: future cancelled, disconnected: {}".format(
-                    self.disconnected
-                )
+                "_disconnect: future cancelled, disconnected: {}".format(self.disconnected)
             )
 
     async def _read_messages(self, callback):
@@ -218,9 +208,7 @@ class GatewayWebSocketClient(LoggingConfigurable):
                     )  # , exc_info=True)
                 if message is None:
                     if not self.disconnected:
-                        self.log.warning(
-                            "Lost connection to Gateway: {}".format(self.kernel_id)
-                        )
+                        self.log.warning("Lost connection to Gateway: {}".format(self.kernel_id))
                     break
                 callback(
                     message
@@ -229,14 +217,11 @@ class GatewayWebSocketClient(LoggingConfigurable):
                 break
 
         # NOTE(esevan): if websocket is not disconnected by client, try to reconnect.
-        if (
-            not self.disconnected
-            and self.retry < GatewayClient.instance().gateway_retry_max
-        ):
+        if not self.disconnected and self.retry < GatewayClient.instance().gateway_retry_max:
             jitter = random.randint(10, 100) * 0.01
             retry_interval = (
                 min(
-                    GatewayClient.instance().gateway_retry_interval * (2**self.retry),
+                    GatewayClient.instance().gateway_retry_interval * (2 ** self.retry),
                     GatewayClient.instance().gateway_retry_interval_max,
                 )
                 + jitter

@@ -7,6 +7,8 @@ import re
 from fnmatch import fnmatch
 
 from ipython_genutils.importstring import import_item
+from jupyter_server.transutils import _i18n
+from jupyter_server.utils import ensure_async
 from nbformat import sign
 from nbformat import validate as validate_nb
 from nbformat import ValidationError
@@ -28,8 +30,6 @@ from traitlets.config.configurable import LoggingConfigurable
 from ...files.handlers import FilesHandler
 from .checkpoints import AsyncCheckpoints
 from .checkpoints import Checkpoints
-from jupyter_server.transutils import _i18n
-from jupyter_server.utils import ensure_async
 
 
 copy_pat = re.compile(r"\-Copy\d*\.")
@@ -133,9 +133,7 @@ class ContentsManager(LoggingConfigurable):
         if self.pre_save_hook:
             try:
                 self.log.debug("Running pre-save hook on %s", path)
-                self.pre_save_hook(
-                    model=model, path=path, contents_manager=self, **kwargs
-                )
+                self.pre_save_hook(model=model, path=path, contents_manager=self, **kwargs)
             except HTTPError:
                 # allow custom HTTPErrors to raise,
                 # rejecting the save with a message.
@@ -193,9 +191,7 @@ class ContentsManager(LoggingConfigurable):
         """
         handlers = []
         if self.files_handler_class:
-            handlers.append(
-                (r"/files/(.*)", self.files_handler_class, self.files_handler_params)
-            )
+            handlers.append((r"/files/(.*)", self.files_handler_class, self.files_handler_params))
         return handlers
 
     # ContentsManager API part 1: methods that must be

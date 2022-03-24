@@ -5,9 +5,7 @@ import pytest
 def jp_server_config(jp_template_dir):
     return {
         "ServerApp": {
-            "jpserver_extensions": {
-                "jupyter_server.tests.extension.mockextensions": True
-            }
+            "jpserver_extensions": {"jupyter_server.tests.extension.mockextensions": True}
         },
         "MockExtensionApp": {"template_paths": [str(jp_template_dir)]},
     }
@@ -29,9 +27,7 @@ async def test_handler_template(jp_fetch, mock_template):
     [
         {
             "ServerApp": {
-                "jpserver_extensions": {
-                    "jupyter_server.tests.extension.mockextensions": True
-                }
+                "jpserver_extensions": {"jupyter_server.tests.extension.mockextensions": True}
             },
             "MockExtensionApp": {
                 # Change a trait in the MockExtensionApp using
@@ -48,9 +44,7 @@ async def test_handler_setting(jp_fetch, jp_server_config):
     assert r.body.decode() == "test mock trait"
 
 
-@pytest.mark.parametrize(
-    "jp_argv", (["--MockExtensionApp.mock_trait=test mock trait"],)
-)
+@pytest.mark.parametrize("jp_argv", (["--MockExtensionApp.mock_trait=test mock trait"],))
 async def test_handler_argv(jp_fetch, jp_argv):
     # Test that the extension trait was picked up by the webapp.
     r = await jp_fetch("mock", method="GET")
@@ -64,9 +58,7 @@ async def test_handler_argv(jp_fetch, jp_argv):
         (
             {
                 "ServerApp": {
-                    "jpserver_extensions": {
-                        "jupyter_server.tests.extension.mockextensions": True
-                    },
+                    "jpserver_extensions": {"jupyter_server.tests.extension.mockextensions": True},
                     # Move extension handlers behind a url prefix
                     "base_url": "test_prefix",
                 },

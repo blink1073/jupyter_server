@@ -1,6 +1,5 @@
 import pytest
 from jupyter_core.paths import jupyter_config_path
-
 from jupyter_server.extension.config import (
     ExtensionConfigManager,
 )

@@ -2,7 +2,6 @@ import re
 
 import pytest
 import tornado
-
 from jupyter_server.base.handlers import path_regex
 from jupyter_server.utils import url_path_join
 

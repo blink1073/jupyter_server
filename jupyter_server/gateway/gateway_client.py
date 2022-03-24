@@ -47,9 +47,7 @@ class GatewayClient(SingletonConfigurable):
         # Ensure value, if present, starts with 'http'
         if value is not None and len(value) > 0:
             if not str(value).lower().startswith("http"):
-                raise TraitError(
-                    "GatewayClient url must start with 'http': '%r'" % value
-                )
+                raise TraitError("GatewayClient url must start with 'http': '%r'" % value)
         return value
 
     ws_url = Unicode(
@@ -77,9 +75,7 @@ class GatewayClient(SingletonConfigurable):
         # Ensure value, if present, starts with 'ws'
         if value is not None and len(value) > 0:
             if not str(value).lower().startswith("ws"):
-                raise TraitError(
-                    "GatewayClient ws_url must start with 'ws': '%r'" % value
-                )
+                raise TraitError("GatewayClient ws_url must start with 'ws': '%r'" % value)
         return value
 
     kernels_endpoint_default_value = "/api/kernels"
@@ -92,9 +88,7 @@ class GatewayClient(SingletonConfigurable):
 
     @default("kernels_endpoint")
     def _kernels_endpoint_default(self):
-        return os.environ.get(
-            self.kernels_endpoint_env, self.kernels_endpoint_default_value
-        )
+        return os.environ.get(self.kernels_endpoint_env, self.kernels_endpoint_default_value)
 
     kernelspecs_endpoint_default_value = "/api/kernelspecs"
     kernelspecs_endpoint_env = "JUPYTER_GATEWAY_KERNELSPECS_ENDPOINT"
@@ -138,9 +132,7 @@ class GatewayClient(SingletonConfigurable):
     @default("connect_timeout")
     def connect_timeout_default(self):
         return float(
-            os.environ.get(
-                "JUPYTER_GATEWAY_CONNECT_TIMEOUT", self.connect_timeout_default_value
-            )
+            os.environ.get("JUPYTER_GATEWAY_CONNECT_TIMEOUT", self.connect_timeout_default_value)
         )
 
     request_timeout_default_value = 40.0
@@ -154,9 +146,7 @@ class GatewayClient(SingletonConfigurable):
     @default("request_timeout")
     def request_timeout_default(self):
         return float(
-            os.environ.get(
-                "JUPYTER_GATEWAY_REQUEST_TIMEOUT", self.request_timeout_default_value
-            )
+            os.environ.get("JUPYTER_GATEWAY_REQUEST_TIMEOUT", self.request_timeout_default_value)
         )
 
     client_key = Unicode(
@@ -282,9 +272,7 @@ class GatewayClient(SingletonConfigurable):
     @default("validate_cert")
     def validate_cert_default(self):
         return bool(
-            os.environ.get(
-                self.validate_cert_env, str(self.validate_cert_default_value)
-            )
+            os.environ.get(self.validate_cert_env, str(self.validate_cert_default_value))
             not in ["no", "false"]
         )
 
@@ -357,9 +345,7 @@ class GatewayClient(SingletonConfigurable):
     @default("gateway_retry_max")
     def gateway_retry_max_default(self):
         return int(
-            os.environ.get(
-                "JUPYTER_GATEWAY_RETRY_MAX", self.gateway_retry_max_default_value
-            )
+            os.environ.get("JUPYTER_GATEWAY_RETRY_MAX", self.gateway_retry_max_default_value)
         )
 
     @property

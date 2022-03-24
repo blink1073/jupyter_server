@@ -11,6 +11,4 @@ async def test_list_formats(jp_fetch):
     required_keys_present = []
     for name, data in formats.items():
         required_keys_present.append("output_mimetype" in data)
-    assert all(
-        required_keys_present
-    ), "All returned formats must have a `output_mimetype` key."
+    assert all(required_keys_present), "All returned formats must have a `output_mimetype` key."

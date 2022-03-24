@@ -1,5 +1,4 @@
 from jinja2.exceptions import TemplateNotFound
-
 from jupyter_server.base.handlers import FileFindHandler
 
 
@@ -99,9 +98,7 @@ class ExtensionHandlerMixin:
             else:
                 raise e
 
-        get_url = self.settings.get(
-            "static_handler_class", FileFindHandler
-        ).make_static_url
+        get_url = self.settings.get("static_handler_class", FileFindHandler).make_static_url
 
         if include_host is None:
             include_host = getattr(self, "include_host", False)

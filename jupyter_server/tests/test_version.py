@@ -1,7 +1,6 @@
 import re
 
 import pytest
-
 from jupyter_server import __version__
 
 

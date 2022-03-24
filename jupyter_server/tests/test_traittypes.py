@@ -1,11 +1,10 @@
 import pytest
-from traitlets import HasTraits
-from traitlets import TraitError
-from traitlets.utils.importstring import import_item
-
 from jupyter_server.services.contents.largefilemanager import LargeFileManager
 from jupyter_server.traittypes import InstanceFromClasses
 from jupyter_server.traittypes import TypeFromClasses
+from traitlets import HasTraits
+from traitlets import TraitError
+from traitlets.utils.importstring import import_item
 
 
 class DummyClass:

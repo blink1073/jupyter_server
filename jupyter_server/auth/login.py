@@ -79,10 +79,7 @@ class LoginHandler(JupyterHandler):
         new_password = self.get_argument("new_password", default="")
 
         if self.get_login_available(self.settings):
-            if (
-                self.passwd_check(self.hashed_password, typed_password)
-                and not new_password
-            ):
+            if self.passwd_check(self.hashed_password, typed_password) and not new_password:
                 self.set_login_cookie(self, uuid.uuid4().hex)
             elif self.token and self.token == typed_password:
                 self.set_login_cookie(self, uuid.uuid4().hex)
@@ -127,9 +124,7 @@ class LoginHandler(JupyterHandler):
         user_token = handler.get_argument("token", "")
         if not user_token:
             # get it from Authorization header
-            m = cls.auth_header_pat.match(
-                handler.request.headers.get("Authorization", "")
-            )
+            m = cls.auth_header_pat.match(handler.request.headers.get("Authorization", ""))
             if m:
                 user_token = m.group(1)
         return user_token
@@ -173,12 +168,8 @@ class LoginHandler(JupyterHandler):
             return handler._user_id
         user_id = cls.get_user_token(handler)
         if user_id is None:
-            get_secure_cookie_kwargs = handler.settings.get(
-                "get_secure_cookie_kwargs", {}
-            )
-            user_id = handler.get_secure_cookie(
-                handler.cookie_name, **get_secure_cookie_kwargs
-            )
+            get_secure_cookie_kwargs = handler.settings.get("get_secure_cookie_kwargs", {})
+            user_id = handler.get_secure_cookie(handler.cookie_name, **get_secure_cookie_kwargs)
             if user_id:
                 user_id = user_id.decode()
         else:
@@ -191,9 +182,7 @@ class LoginHandler(JupyterHandler):
             # extra warnings. But don't do this on a request with *no* cookie,
             # because that can erroneously log you out (see gh-3365)
             if handler.get_cookie(handler.cookie_name) is not None:
-                handler.log.warning(
-                    "Clearing invalid/expired login cookie %s", handler.cookie_name
-                )
+                handler.log.warning("Clearing invalid/expired login cookie %s", handler.cookie_name)
                 handler.clear_login_cookie()
             if not handler.login_available:
                 # Completely insecure! No authentication at all.
@@ -240,9 +229,7 @@ class LoginHandler(JupyterHandler):
         if not app.ip:
             warning = "WARNING: The Jupyter server is listening on all IP addresses"
             if ssl_options is None:
-                app.log.warning(
-                    warning + " and not using encryption. This " "is not recommended."
-                )
+                app.log.warning(warning + " and not using encryption. This " "is not recommended.")
             if not app.password and not app.token:
                 app.log.warning(
                     warning + " and not using authentication. "

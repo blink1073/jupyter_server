@@ -1,12 +1,11 @@
 import pytest
-from tornado import web
-from traitlets import TraitError
-
 from jupyter_server._tz import isoformat
 from jupyter_server._tz import utcnow
 from jupyter_server.services.contents.manager import ContentsManager
 from jupyter_server.services.kernels.kernelmanager import MappingKernelManager
 from jupyter_server.services.sessions.sessionmanager import SessionManager
+from tornado import web
+from traitlets import TraitError
 
 
 class DummyKernel(object):
@@ -28,9 +27,7 @@ class DummyMKM(MappingKernelManager):
     def _new_id(self):
         return next(self.id_letters)
 
-    async def start_kernel(
-        self, kernel_id=None, path=None, kernel_name="python", **kwargs
-    ):
+    async def start_kernel(self, kernel_id=None, path=None, kernel_name="python", **kwargs):
         kernel_id = kernel_id or self._new_id()
         k = self._kernels[kernel_id] = DummyKernel(kernel_name=kernel_name)
         self._kernel_connections[kernel_id] = 0

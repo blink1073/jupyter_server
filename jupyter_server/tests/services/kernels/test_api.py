@@ -4,11 +4,11 @@ import time
 import pytest
 import tornado
 from jupyter_client.kernelspec import NATIVE_KERNEL_NAME
+from jupyter_server.services.kernels.kernelmanager import AsyncMappingKernelManager
+from jupyter_server.utils import url_path_join
 from tornado.httpclient import HTTPClientError
 
 from ...utils import expected_http_error
-from jupyter_server.services.kernels.kernelmanager import AsyncMappingKernelManager
-from jupyter_server.utils import url_path_join
 
 
 class TestMappingKernelManager(AsyncMappingKernelManager):
@@ -46,9 +46,7 @@ async def test_no_kernels(jp_fetch):
 async def test_default_kernels(jp_fetch, jp_base_url, jp_cleanup_subprocesses):
     r = await jp_fetch("api", "kernels", method="POST", allow_nonstandard_methods=True)
     kernel = json.loads(r.body.decode())
-    assert r.headers["location"] == url_path_join(
-        jp_base_url, "/api/kernels/", kernel["id"]
-    )
+    assert r.headers["location"] == url_path_join(jp_base_url, "/api/kernels/", kernel["id"])
     assert r.code == 201
     assert isinstance(kernel, dict)
 
@@ -60,17 +58,13 @@ async def test_default_kernels(jp_fetch, jp_base_url, jp_cleanup_subprocesses):
     await jp_cleanup_subprocesses()
 
 
-async def test_main_kernel_handler(
-    jp_fetch, jp_base_url, jp_cleanup_subprocesses, jp_serverapp
-):
+async def test_main_kernel_handler(jp_fetch, jp_base_url, jp_cleanup_subprocesses, jp_serverapp):
     # Start the first kernel
     r = await jp_fetch(
         "api", "kernels", method="POST", body=json.dumps({"name": NATIVE_KERNEL_NAME})
     )
     kernel1 = json.loads(r.body.decode())
-    assert r.headers["location"] == url_path_join(
-        jp_base_url, "/api/kernels/", kernel1["id"]
-    )
+    assert r.headers["location"] == url_path_join(jp_base_url, "/api/kernels/", kernel1["id"])
     assert r.code == 201
     assert isinstance(kernel1, dict)
 
@@ -191,9 +185,7 @@ async def test_kernel_handler_startup_error(
 
     # Create a kernel
     with pytest.raises(HTTPClientError):
-        await jp_fetch(
-            "api", "kernels", method="POST", body=json.dumps({"name": "bad"})
-        )
+        await jp_fetch("api", "kernels", method="POST", body=json.dumps({"name": "bad"}))
 
 
 async def test_kernel_handler_startup_error_pending(
@@ -204,9 +196,7 @@ async def test_kernel_handler_startup_error_pending(
 
     jp_serverapp.kernel_manager.use_pending_kernels = True
     # Create a kernel
-    r = await jp_fetch(
-        "api", "kernels", method="POST", body=json.dumps({"name": "bad"})
-    )
+    r = await jp_fetch("api", "kernels", method="POST", body=json.dumps({"name": "bad"}))
     kid = json.loads(r.body.decode())["id"]
 
     with pytest.raises(HTTPClientError):

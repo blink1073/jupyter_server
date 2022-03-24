@@ -3,11 +3,11 @@
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 import terminado
+from jupyter_server._tz import utcnow
 from tornado import web
 
 from ..base.handlers import JupyterHandler
 from ..base.zmqhandlers import WebSocketMixin
-from jupyter_server._tz import utcnow
 
 
 class TermSocket(WebSocketMixin, JupyterHandler, terminado.TermSocket):

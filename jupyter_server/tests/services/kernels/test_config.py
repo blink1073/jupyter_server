@@ -1,19 +1,12 @@
 import pytest
-from traitlets.config import Config
-
 from jupyter_server.services.kernels.kernelmanager import AsyncMappingKernelManager
+from traitlets.config import Config
 
 
 @pytest.fixture
 def jp_server_config():
     return Config(
-        {
-            "ServerApp": {
-                "MappingKernelManager": {
-                    "allowed_message_types": ["kernel_info_request"]
-                }
-            }
-        }
+        {"ServerApp": {"MappingKernelManager": {"allowed_message_types": ["kernel_info_request"]}}}
     )
 
 

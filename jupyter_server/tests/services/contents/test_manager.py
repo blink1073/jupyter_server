@@ -4,14 +4,14 @@ import time
 from itertools import combinations
 
 import pytest
+from jupyter_server.services.contents.filemanager import AsyncFileContentsManager
+from jupyter_server.services.contents.filemanager import FileContentsManager
+from jupyter_server.utils import ensure_async
 from nbformat import v4 as nbformat
 from tornado.web import HTTPError
 from traitlets import TraitError
 
 from ...utils import expected_http_error
-from jupyter_server.services.contents.filemanager import AsyncFileContentsManager
-from jupyter_server.services.contents.filemanager import FileContentsManager
-from jupyter_server.utils import ensure_async
 
 
 @pytest.fixture(
@@ -24,9 +24,7 @@ from jupyter_server.utils import ensure_async
 )
 def jp_contents_manager(request, tmp_path):
     contents_manager, use_atomic_writing = request.param
-    return contents_manager(
-        root_dir=str(tmp_path), use_atomic_writing=use_atomic_writing
-    )
+    return contents_manager(root_dir=str(tmp_path), use_atomic_writing=use_atomic_writing)
 
 
 @pytest.fixture(params=[FileContentsManager, AsyncFileContentsManager])
@@ -60,9 +58,7 @@ def symlink(jp_contents_manager, src, dst):
 
 
 def add_code_cell(notebook):
-    output = nbformat.new_output(
-        "display_data", {"application/javascript": "alert('hi');"}
-    )
+    output = nbformat.new_output("display_data", {"application/javascript": "alert('hi');"})
     cell = nbformat.new_code_cell("print('hi')", outputs=[output])
     notebook.cells.append(cell)
 
@@ -178,9 +174,7 @@ async def test_bad_symlink(jp_file_contents_manager_class, tmp_path):
     assert "bad symlink" in contents
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"), reason="Windows doesn't detect symlink loops"
-)
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="Windows doesn't detect symlink loops")
 async def test_recursive_symlink(jp_file_contents_manager_class, tmp_path):
     td = str(tmp_path)
 
@@ -221,9 +215,7 @@ async def test_good_symlink(jp_file_contents_manager_class, tmp_path):
     ]
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("win"), reason="Can't test permissions on Windows"
-)
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="Can't test permissions on Windows")
 async def test_403(jp_file_contents_manager_class, tmp_path):
     if hasattr(os, "getuid"):
         if os.getuid() == 0:
@@ -364,9 +356,7 @@ async def test_get(jp_contents_manager):
     assert nb_as_file["format"] == "text"
     assert not isinstance(nb_as_file["content"], dict)
 
-    nb_as_bin_file = await ensure_async(
-        cm.get(path, content=True, type="file", format="base64")
-    )
+    nb_as_bin_file = await ensure_async(cm.get(path, content=True, type="file", format="base64"))
     assert nb_as_bin_file["format"] == "base64"
 
     # Test in sub-directory
@@ -382,9 +372,7 @@ async def test_get(jp_contents_manager):
     assert model2["path"] == "{0}/{1}".format(sub_dir.strip("/"), name)
 
     # Test with a regular file.
-    file_model_path = (await ensure_async(cm.new_untitled(path=sub_dir, ext=".txt")))[
-        "path"
-    ]
+    file_model_path = (await ensure_async(cm.new_untitled(path=sub_dir, ext=".txt")))["path"]
     file_model = await ensure_async(cm.get(file_model_path))
     expected_model = {
         "content": "",
@@ -414,9 +402,7 @@ async def test_get(jp_contents_manager):
     # Directory contents should match the contents of each individual entry
     # when requested with content=False.
     model2_no_content = await ensure_async(cm.get(sub_dir + name, content=False))
-    file_model_no_content = await ensure_async(
-        cm.get("foo/untitled.txt", content=False)
-    )
+    file_model_no_content = await ensure_async(cm.get("foo/untitled.txt", content=False))
     sub_sub_dir_no_content = await ensure_async(cm.get("foo/bar", content=False))
     assert sub_sub_dir_no_content["path"] == "foo/bar"
     assert sub_sub_dir_no_content["name"] == "bar"
@@ -541,9 +527,7 @@ async def test_delete(jp_contents_manager):
         [False, False, True],
     ),
 )
-async def test_delete_non_empty_folder(
-    delete_to_trash, always_delete, error, jp_contents_manager
-):
+async def test_delete_non_empty_folder(delete_to_trash, always_delete, error, jp_contents_manager):
     cm = jp_contents_manager
     cm.delete_to_trash = delete_to_trash
     cm.always_delete_dir = always_delete

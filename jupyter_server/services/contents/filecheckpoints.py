@@ -6,6 +6,7 @@ import shutil
 
 from anyio.to_thread import run_sync
 from jupyter_core.utils import ensure_dir_exists
+from jupyter_server import _tz as tz
 from tornado.web import HTTPError
 from traitlets import Unicode
 
@@ -15,7 +16,6 @@ from .checkpoints import Checkpoints
 from .checkpoints import GenericCheckpointsMixin
 from .fileio import AsyncFileManagerMixin
 from .fileio import FileManagerMixin
-from jupyter_server import _tz as tz
 
 
 class FileCheckpoints(FileManagerMixin, Checkpoints):

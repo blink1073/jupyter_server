@@ -3,9 +3,7 @@ import json
 
 async def test_create_retrieve_config(jp_fetch):
     sample = {"foo": "bar", "baz": 73}
-    response = await jp_fetch(
-        "api", "config", "example", method="PUT", body=json.dumps(sample)
-    )
+    response = await jp_fetch("api", "config", "example", method="PUT", body=json.dumps(sample))
     assert response.code == 204
 
     response2 = await jp_fetch(

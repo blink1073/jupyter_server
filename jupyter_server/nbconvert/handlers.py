@@ -7,6 +7,7 @@ import zipfile
 
 from ipython_genutils import text
 from ipython_genutils.py3compat import cast_bytes
+from jupyter_server.utils import ensure_async
 from nbformat import from_dict
 from tornado import web
 from tornado.log import app_log
@@ -14,7 +15,6 @@ from tornado.log import app_log
 from ..base.handlers import FilesRedirectHandler
 from ..base.handlers import JupyterHandler
 from ..base.handlers import path_regex
-from jupyter_server.utils import ensure_async
 
 
 def find_resource_files(output_files_dir):
@@ -39,9 +39,7 @@ def respond_zip(handler, name, output, resources):
     zip_filename = os.path.splitext(name)[0] + ".zip"
     handler.set_attachment_header(zip_filename)
     handler.set_header("Content-Type", "application/zip")
-    handler.set_header(
-        "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"
-    )
+    handler.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 
     # Prepare the zip file
     buffer = io.BytesIO()
@@ -133,13 +131,9 @@ class NbconvertFileHandler(JupyterHandler):
 
         # MIME type
         if exporter.output_mimetype:
-            self.set_header(
-                "Content-Type", "%s; charset=utf-8" % exporter.output_mimetype
-            )
+            self.set_header("Content-Type", "%s; charset=utf-8" % exporter.output_mimetype)
 
-        self.set_header(
-            "Cache-Control", "no-store, no-cache, must-revalidate, max-age=0"
-        )
+        self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
         self.finish(output)
 
 
@@ -173,9 +167,7 @@ class NbconvertPostHandler(JupyterHandler):
 
         # MIME type
         if exporter.output_mimetype:
-            self.set_header(
-                "Content-Type", "%s; charset=utf-8" % exporter.output_mimetype
-            )
+            self.set_header("Content-Type", "%s; charset=utf-8" % exporter.output_mimetype)
 
         self.finish(output)
 

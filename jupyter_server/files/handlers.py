@@ -5,10 +5,9 @@ import json
 import mimetypes
 from base64 import decodebytes
 
-from tornado import web
-
 from jupyter_server.base.handlers import JupyterHandler
 from jupyter_server.utils import ensure_async
+from tornado import web
 
 
 class FilesHandler(JupyterHandler):
@@ -24,10 +23,7 @@ class FilesHandler(JupyterHandler):
     def content_security_policy(self):
         # In case we're serving HTML/SVG, confine any Javascript to a unique
         # origin so it can't interact with the notebook server.
-        return (
-            super(FilesHandler, self).content_security_policy
-            + "; sandbox allow-scripts"
-        )
+        return super(FilesHandler, self).content_security_policy + "; sandbox allow-scripts"
 
     @web.authenticated
     def head(self, path):

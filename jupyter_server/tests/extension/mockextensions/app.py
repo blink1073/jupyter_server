@@ -1,13 +1,12 @@
 import os
 
-from traitlets import List
-from traitlets import Unicode
-
 from jupyter_server.base.handlers import JupyterHandler
 from jupyter_server.extension.application import ExtensionApp
 from jupyter_server.extension.application import ExtensionAppJinjaMixin
 from jupyter_server.extension.handler import ExtensionHandlerJinjaMixin
 from jupyter_server.extension.handler import ExtensionHandlerMixin
+from traitlets import List
+from traitlets import Unicode
 
 STATIC_PATH = os.path.join(os.path.dirname(__file__), "static")
 
@@ -38,9 +37,7 @@ class MockExtensionApp(ExtensionAppJinjaMixin, ExtensionApp):
     loaded = False
 
     serverapp_config = {
-        "jpserver_extensions": {
-            "jupyter_server.tests.extension.mockextensions.mock1": True
-        }
+        "jpserver_extensions": {"jupyter_server.tests.extension.mockextensions.mock1": True}
     }
 
     @staticmethod

@@ -7,6 +7,8 @@
 from datetime import timedelta
 
 import terminado
+from jupyter_server._tz import isoformat
+from jupyter_server._tz import utcnow
 from tornado import web
 from tornado.ioloop import IOLoop
 from tornado.ioloop import PeriodicCallback
@@ -14,8 +16,6 @@ from traitlets import Integer
 from traitlets.config import LoggingConfigurable
 
 from ..prometheus.metrics import TERMINAL_CURRENTLY_RUNNING_TOTAL
-from jupyter_server._tz import isoformat
-from jupyter_server._tz import utcnow
 
 
 class TerminalManager(LoggingConfigurable, terminado.NamedTermManager):

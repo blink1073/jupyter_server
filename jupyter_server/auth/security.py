@@ -151,9 +151,7 @@ def persist_config(config_file=None, mode=0o600):
 
     os.makedirs(os.path.dirname(config_file), exist_ok=True)
 
-    loader = JSONFileConfigLoader(
-        os.path.basename(config_file), os.path.dirname(config_file)
-    )
+    loader = JSONFileConfigLoader(os.path.basename(config_file), os.path.dirname(config_file))
     try:
         config = loader.load_config()
     except ConfigFileNotFound:
@@ -168,9 +166,7 @@ def persist_config(config_file=None, mode=0o600):
         os.chmod(config_file, mode)
     except Exception as e:
         tb = traceback.format_exc()
-        warnings.warn(
-            "Failed to set permissions on %s:\n%s" % (config_file, tb), RuntimeWarning
-        )
+        warnings.warn("Failed to set permissions on %s:\n%s" % (config_file, tb), RuntimeWarning)
 
 
 def set_password(password=None, config_file=None):

@@ -44,9 +44,7 @@ class MainKernelHandler(APIHandler):
         else:
             model.setdefault("name", km.default_kernel_name)
 
-        kernel_id = await km.start_kernel(
-            kernel_name=model["name"], path=model.get("path")
-        )
+        kernel_id = await km.start_kernel(kernel_name=model["name"], path=model.get("path"))
         model = await ensure_async(km.kernel_model(kernel_id))
         location = url_path_join(self.base_url, "api", "kernels", url_escape(kernel_id))
         self.set_header("Location", location)
@@ -195,25 +193,19 @@ class ZMQChannelsHandler(AuthenticatedZMQStreamHandler):
             # NOTE: this close check appears to never be True during on_open,
             # even when the peer has closed the connection
             if self.ws_connection is None or self.ws_connection.is_closing():
-                self.log.debug(
-                    "Nudge: cancelling on closed websocket: %s", self.kernel_id
-                )
+                self.log.debug("Nudge: cancelling on closed websocket: %s", self.kernel_id)
                 finish()
                 return
 
             # check for stopped kernel
             if self.kernel_id not in self.kernel_manager:
-                self.log.debug(
-                    "Nudge: cancelling on stopped kernel: %s", self.kernel_id
-                )
+                self.log.debug("Nudge: cancelling on stopped kernel: %s", self.kernel_id)
                 finish()
                 return
 
             # check for closed zmq socket
             if control_channel.closed():
-                self.log.debug(
-                    "Nudge: cancelling on closed zmq socket: %s", self.kernel_id
-                )
+                self.log.debug("Nudge: cancelling on closed zmq socket: %s", self.kernel_id)
                 finish()
                 return
 
@@ -344,9 +336,7 @@ class ZMQChannelsHandler(AuthenticatedZMQStreamHandler):
             """Don't wait forever for the kernel to reply"""
             if future.done():
                 return
-            self.log.warning(
-                "Timeout waiting for kernel_info reply from %s", self.kernel_id
-            )
+            self.log.warning("Timeout waiting for kernel_info reply from %s", self.kernel_id)
             future.set_result({})
 
         loop = IOLoop.current()
@@ -451,9 +441,7 @@ class ZMQChannelsHandler(AuthenticatedZMQStreamHandler):
         am = self.kernel_manager.allowed_message_types
         mt = msg["header"]["msg_type"]
         if am and mt not in am:
-            self.log.warning(
-                'Received message of type "%s", which is not allowed. Ignoring.' % mt
-            )
+            self.log.warning('Received message of type "%s", which is not allowed. Ignoring.' % mt)
         else:
             stream = self.channels[channel]
             self.session.send(stream, msg)
@@ -522,9 +510,7 @@ class ZMQChannelsHandler(AuthenticatedZMQStreamHandler):
 
             # Queue a removal of the byte and message count for a time in the
             # future, when we are no longer interested in it.
-            self._iopub_window_byte_queue.append(
-                (now + self.rate_limit_window, byte_count)
-            )
+            self._iopub_window_byte_queue.append((now + self.rate_limit_window, byte_count))
 
             # Check the limits, set the limit flags, and reset the
             # message and data counts.
@@ -554,18 +540,13 @@ class ZMQChannelsHandler(AuthenticatedZMQStreamHandler):
                     )
             else:
                 # resume once we've got some headroom below the limit
-                if self._iopub_msgs_exceeded and msg_rate < (
-                    0.8 * self.iopub_msg_rate_limit
-                ):
+                if self._iopub_msgs_exceeded and msg_rate < (0.8 * self.iopub_msg_rate_limit):
                     self._iopub_msgs_exceeded = False
                     if not self._iopub_data_exceeded:
                         self.log.warning("iopub messages resumed")
 
             # Check the data rate
-            if (
-                self.iopub_data_rate_limit > 0
-                and data_rate > self.iopub_data_rate_limit
-            ):
+            if self.iopub_data_rate_limit > 0 and data_rate > self.iopub_data_rate_limit:
                 if not self._iopub_data_exceeded:
                     self._iopub_data_exceeded = True
                     write_stderr(
@@ -587,9 +568,7 @@ class ZMQChannelsHandler(AuthenticatedZMQStreamHandler):
                     )
             else:
                 # resume once we've got some headroom below the limit
-                if self._iopub_data_exceeded and data_rate < (
-                    0.8 * self.iopub_data_rate_limit
-                ):
+                if self._iopub_data_exceeded and data_rate < (0.8 * self.iopub_data_rate_limit):
                     self._iopub_data_exceeded = False
                     if not self._iopub_msgs_exceeded:
                         self.log.warning("iopub messages resumed")
@@ -667,9 +646,7 @@ class ZMQChannelsHandler(AuthenticatedZMQStreamHandler):
             return
         msg["content"]["ename"] = "ExecutionError"
         msg["content"]["evalue"] = "Execution error"
-        msg["content"]["traceback"] = [
-            self.kernel_manager.traceback_replacement_message
-        ]
+        msg["content"]["traceback"] = [self.kernel_manager.traceback_replacement_message]
 
 
 # -----------------------------------------------------------------------------

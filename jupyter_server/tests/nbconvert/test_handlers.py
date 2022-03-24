@@ -47,9 +47,7 @@ def notebook(jp_root_dir):
     nbfile.write_text(writes(nb, version=4), encoding="utf-8")
 
 
-pytestmark = pytest.mark.skipif(
-    not which("pandoc"), reason="Command 'pandoc' is not available"
-)
+pytestmark = pytest.mark.skipif(not which("pandoc"), reason="Command 'pandoc' is not available")
 
 
 async def test_from_file(jp_fetch, notebook):

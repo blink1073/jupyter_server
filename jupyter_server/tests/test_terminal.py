@@ -141,9 +141,7 @@ async def test_culling_config(jp_server_config, jp_configurable_serverapp):
     terminal_mgr_config = jp_configurable_serverapp().config.ServerApp.TerminalManager
     assert terminal_mgr_config.cull_inactive_timeout == CULL_TIMEOUT
     assert terminal_mgr_config.cull_interval == CULL_INTERVAL
-    terminal_mgr_settings = jp_configurable_serverapp().web_app.settings[
-        "terminal_manager"
-    ]
+    terminal_mgr_settings = jp_configurable_serverapp().web_app.settings["terminal_manager"]
     assert terminal_mgr_settings.cull_inactive_timeout == CULL_TIMEOUT
     assert terminal_mgr_settings.cull_interval == CULL_INTERVAL
 

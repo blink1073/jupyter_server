@@ -6,13 +6,12 @@ from unittest.mock import patch
 
 import pytest
 from jupyter_core.application import NoStart
-from traitlets import TraitError
-from traitlets.tests.utils import check_help_all_output
-
 from jupyter_server.auth.security import passwd_check
 from jupyter_server.serverapp import JupyterPasswordApp
 from jupyter_server.serverapp import list_running_servers
 from jupyter_server.serverapp import ServerApp
+from traitlets import TraitError
+from traitlets.tests.utils import check_help_all_output
 
 
 def test_help_output():
@@ -45,9 +44,7 @@ def test_root_dir(tmp_path, jp_configurable_serverapp):
 
 
 # Build a list of invalid paths
-@pytest.fixture(
-    params=[("notebooks",), ("root", "dir", "is", "missing"), ("test.txt",)]
-)
+@pytest.fixture(params=[("notebooks",), ("root", "dir", "is", "missing"), ("test.txt",)])
 def invalid_root_dir(tmp_path, request):
     path = tmp_path.joinpath(*request.param)
     # If the path is a file, create it.
@@ -139,9 +136,7 @@ def prefix_path(jp_root_dir, tmp_path):
         ("/jp_root_dir", "path/to/notebook.ipynb", "path/to/notebook.ipynb"),
     ],
 )
-def test_resolve_file_to_run_and_root_dir(
-    prefix_path, root_dir, file_to_run, expected_output
-):
+def test_resolve_file_to_run_and_root_dir(prefix_path, root_dir, file_to_run, expected_output):
     # Verify that the Singleton instance is cleared before the test runs.
     ServerApp.clear_instance()
 
@@ -334,9 +329,7 @@ def test_observed_root_dir_updates_preferred_dir(tmp_path, jp_configurable_serve
     assert app.preferred_dir == new_path
 
 
-def test_observed_root_dir_does_not_update_preferred_dir(
-    tmp_path, jp_configurable_serverapp
-):
+def test_observed_root_dir_does_not_update_preferred_dir(tmp_path, jp_configurable_serverapp):
     path = str(tmp_path)
     new_path = str(tmp_path.parent)
     app = jp_configurable_serverapp(root_dir=path, preferred_dir=path)

@@ -7,7 +7,6 @@ import sys
 import decorator
 import pytest
 from ipython_genutils.testing.decorators import skip_win32 as _skip_win32
-
 from jupyter_server.services.contents.fileio import atomic_writing
 
 

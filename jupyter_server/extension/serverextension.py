@@ -9,13 +9,12 @@ from jupyter_core.application import JupyterApp
 from jupyter_core.paths import ENV_CONFIG_PATH
 from jupyter_core.paths import jupyter_config_dir
 from jupyter_core.paths import SYSTEM_CONFIG_PATH
-from tornado.log import LogFormatter
-from traitlets import Bool
-
 from jupyter_server._version import __version__
 from jupyter_server.extension.config import ExtensionConfigManager
 from jupyter_server.extension.manager import ExtensionManager
 from jupyter_server.extension.manager import ExtensionPackage
+from tornado.log import LogFormatter
+from traitlets import Bool
 
 
 def _get_config_dir(user=False, sys_prefix=False):
@@ -41,9 +40,7 @@ def _get_config_dir(user=False, sys_prefix=False):
     return extdir
 
 
-def _get_extmanager_for_context(
-    write_dir="jupyter_server_config.d", user=False, sys_prefix=False
-):
+def _get_extmanager_for_context(write_dir="jupyter_server_config.d", user=False, sys_prefix=False):
     """Get an extension manager pointing at the current context
 
     Returns the path to the current context and an ExtensionManager object.
@@ -222,9 +219,7 @@ class ToggleServerExtensionApp(BaseExtensionApp):
     """A base class for enabling/disabling extensions"""
 
     name = "jupyter server extension enable/disable"
-    description = (
-        "Enable/disable a server extension using frontend configuration files."
-    )
+    description = "Enable/disable a server extension using frontend configuration files."
 
     flags = flags
 
@@ -249,9 +244,7 @@ class ToggleServerExtensionApp(BaseExtensionApp):
             user=self.user, sys_prefix=self.sys_prefix
         )
         try:
-            self.log.info(
-                "{}: {}".format(self._toggle_pre_message.capitalize(), import_name)
-            )
+            self.log.info("{}: {}".format(self._toggle_pre_message.capitalize(), import_name))
             self.log.info("- Writing config: {}".format(config_dir))
             # Validate the server extension.
             self.log.info("    - Validating {}...".format(import_name))
@@ -269,9 +262,7 @@ class ToggleServerExtensionApp(BaseExtensionApp):
                 config.disable(import_name)
 
             # If successful, let's log.
-            self.log.info(
-                "    - Extension successfully {}.".format(self._toggle_post_message)
-            )
+            self.log.info("    - Extension successfully {}.".format(self._toggle_post_message))
         except Exception as err:
             self.log.info("     {} Validation failed: {}".format(RED_X, err))
 
@@ -337,9 +328,7 @@ class ListServerExtensionsApp(BaseExtensionApp):
             for name, extension in ext_manager.extensions.items():
                 enabled = extension.enabled
                 # Attempt to get extension metadata
-                self.log.info(
-                    "    {} {}".format(name, GREEN_ENABLED if enabled else RED_DISABLED)
-                )
+                self.log.info("    {} {}".format(name, GREEN_ENABLED if enabled else RED_DISABLED))
                 try:
                     self.log.info("    - Validating {}...".format(name))
                     if not extension.validate():

@@ -105,17 +105,14 @@ except ImportError:
                     name = _prefix(value) + name
                 if tick_wrap:
                     name = name.join("''")
-                return describe(
-                    article, value, name=name, verbose=verbose, capital=capital
-                )
+                return describe(article, value, name=name, verbose=verbose, capital=capital)
         elif article in ("a", "an") or article is None:
             if article is None:
                 return typename
             return add_article(typename, False, capital)
         else:
             raise ValueError(
-                "The 'article' argument should "
-                "be 'the', 'a', 'an', or None not %r" % article
+                "The 'article' argument should " "be 'the', 'a', 'an', or None not %r" % article
             )
 
     def add_article(name, definite=False, capital=False):
@@ -193,9 +190,7 @@ class TypeFromClasses(ClassBasedTraitType):
 
         # OneOfType requires a list of klasses to be specified (different than Type).
         if not isinstance(klasses, (list, tuple, set)):
-            raise TraitError(
-                "`klasses` must be a list of class names (type is str) or classes."
-            )
+            raise TraitError("`klasses` must be a list of class names (type is str) or classes.")
 
         for klass in klasses:
             if not (inspect.isclass(klass) or isinstance(klass, str)):

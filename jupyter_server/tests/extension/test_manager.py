@@ -3,7 +3,6 @@ import unittest.mock as mock
 
 import pytest
 from jupyter_core.paths import jupyter_config_path
-
 from jupyter_server.extension.manager import ExtensionManager
 from jupyter_server.extension.manager import ExtensionMetadataError
 from jupyter_server.extension.manager import ExtensionModuleNotFound

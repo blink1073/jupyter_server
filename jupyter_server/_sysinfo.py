@@ -9,9 +9,8 @@ import platform
 import subprocess
 import sys
 
-from ipython_genutils import encoding
-
 import jupyter_server
+from ipython_genutils import encoding
 
 
 def pkg_commit_hash(pkg_path):

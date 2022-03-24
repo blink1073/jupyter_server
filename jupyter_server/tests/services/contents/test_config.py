@@ -1,5 +1,4 @@
 import pytest
-
 from jupyter_server.services.contents.checkpoints import AsyncCheckpoints
 from jupyter_server.services.contents.filecheckpoints import AsyncGenericFileCheckpoints
 from jupyter_server.services.contents.filecheckpoints import GenericFileCheckpoints

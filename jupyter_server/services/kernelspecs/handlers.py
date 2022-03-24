@@ -30,9 +30,7 @@ def kernelspec_model(handler, name, spec_dict, resource_dir):
     for logo_file in glob.glob(pjoin(resource_dir, "logo-*")):
         fname = os.path.basename(logo_file)
         no_ext, _ = os.path.splitext(fname)
-        d["resources"][no_ext] = url_path_join(
-            handler.base_url, "kernelspecs", name, fname
-        )
+        d["resources"][no_ext] = url_path_join(handler.base_url, "kernelspecs", name, fname)
     return d
 
 
@@ -67,9 +65,7 @@ class MainKernelSpecHandler(APIHandler):
                         kernel_info["resource_dir"],
                     )
             except Exception:
-                self.log.error(
-                    "Failed to load kernel spec: '%s'", kernel_name, exc_info=True
-                )
+                self.log.error("Failed to load kernel spec: '%s'", kernel_name, exc_info=True)
                 continue
             specs[kernel_name] = d
         self.set_header("Content-Type", "application/json")
@@ -88,9 +84,7 @@ class KernelSpecHandler(APIHandler):
         if is_kernelspec_model(spec):
             model = spec
         else:
-            model = kernelspec_model(
-                self, kernel_name, spec.to_dict(), spec.resource_dir
-            )
+            model = kernelspec_model(self, kernel_name, spec.to_dict(), spec.resource_dir)
         self.set_header("Content-Type", "application/json")
         self.finish(json.dumps(model))
 

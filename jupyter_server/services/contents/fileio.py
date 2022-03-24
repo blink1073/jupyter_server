@@ -14,12 +14,11 @@ from functools import partial
 
 import nbformat
 from anyio.to_thread import run_sync
+from jupyter_server.utils import to_api_path
+from jupyter_server.utils import to_os_path
 from tornado.web import HTTPError
 from traitlets import Bool
 from traitlets.config import Configurable
-
-from jupyter_server.utils import to_api_path
-from jupyter_server.utils import to_os_path
 
 
 def replace_file(src, dst):

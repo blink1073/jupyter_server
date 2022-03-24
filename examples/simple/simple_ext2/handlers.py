@@ -14,9 +14,7 @@ class ParameterHandler(ExtensionHandlerMixin, JupyterHandler):
         self.write("<p>components: {}</p>".format(components))
 
 
-class BaseTemplateHandler(
-    ExtensionHandlerJinjaMixin, ExtensionHandlerMixin, JupyterHandler
-):
+class BaseTemplateHandler(ExtensionHandlerJinjaMixin, ExtensionHandlerMixin, JupyterHandler):
     pass
 
 

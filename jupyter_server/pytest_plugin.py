@@ -13,14 +13,13 @@ import jupyter_core.paths
 import nbformat
 import pytest
 import tornado
-from tornado.escape import url_escape
-from traitlets.config import Config
-
 from jupyter_server.extension import serverextension
 from jupyter_server.serverapp import ServerApp
 from jupyter_server.services.contents.filemanager import FileContentsManager
 from jupyter_server.services.contents.largefilemanager import LargeFileManager
 from jupyter_server.utils import url_path_join
+from tornado.escape import url_escape
+from traitlets.config import Config
 
 
 # List of dependencies needed for this plugin.
@@ -116,18 +115,10 @@ def jp_environ(
     monkeypatch.setenv("JUPYTER_CONFIG_DIR", str(jp_config_dir))
     monkeypatch.setenv("JUPYTER_DATA_DIR", str(jp_data_dir))
     monkeypatch.setenv("JUPYTER_RUNTIME_DIR", str(jp_runtime_dir))
-    monkeypatch.setattr(
-        jupyter_core.paths, "SYSTEM_JUPYTER_PATH", [str(jp_system_jupyter_path)]
-    )
-    monkeypatch.setattr(
-        jupyter_core.paths, "ENV_JUPYTER_PATH", [str(jp_env_jupyter_path)]
-    )
-    monkeypatch.setattr(
-        jupyter_core.paths, "SYSTEM_CONFIG_PATH", [str(jp_system_config_path)]
-    )
-    monkeypatch.setattr(
-        jupyter_core.paths, "ENV_CONFIG_PATH", [str(jp_env_config_path)]
-    )
+    monkeypatch.setattr(jupyter_core.paths, "SYSTEM_JUPYTER_PATH", [str(jp_system_jupyter_path)])
+    monkeypatch.setattr(jupyter_core.paths, "ENV_JUPYTER_PATH", [str(jp_env_jupyter_path)])
+    monkeypatch.setattr(jupyter_core.paths, "SYSTEM_CONFIG_PATH", [str(jp_system_config_path)])
+    monkeypatch.setattr(jupyter_core.paths, "ENV_CONFIG_PATH", [str(jp_env_config_path)])
 
 
 # ================= End: Move to Jupyter core ================
@@ -268,9 +259,7 @@ def jp_configurable_serverapp(
         app.initialize(argv=argv, new_httpserver=False)
         # Reroute all logging StreamHandlers away from stdin/stdout since pytest hijacks
         # these streams and closes them at unfortunate times.
-        stream_handlers = [
-            h for h in app.log.handlers if isinstance(h, logging.StreamHandler)
-        ]
+        stream_handlers = [h for h in app.log.handlers if isinstance(h, logging.StreamHandler)]
         for handler in stream_handlers:
             handler.setStream(jp_logging_stream)
         app.log.propagate = True
@@ -308,9 +297,7 @@ def jp_ensure_app_fixture(request):
 
 
 @pytest.fixture(scope="function")
-def jp_serverapp(
-    jp_ensure_app_fixture, jp_server_config, jp_argv, jp_configurable_serverapp
-):
+def jp_serverapp(jp_ensure_app_fixture, jp_server_config, jp_argv, jp_configurable_serverapp):
     """Starts a Jupyter Server instance based on the established configuration values."""
     app = jp_configurable_serverapp(config=jp_server_config, argv=jp_argv)
     yield app
@@ -365,17 +352,13 @@ def jp_fetch(jp_serverapp, http_server_client, jp_auth_header, jp_base_url):
         # Add auth keys to header
         headers.update(jp_auth_header)
         # Make request.
-        return http_server_client.fetch(
-            url, headers=headers, request_timeout=20, **kwargs
-        )
+        return http_server_client.fetch(url, headers=headers, request_timeout=20, **kwargs)
 
     return client_fetch
 
 
 @pytest.fixture
-def jp_ws_fetch(
-    jp_serverapp, http_server_client, jp_auth_header, jp_http_port, jp_base_url
-):
+def jp_ws_fetch(jp_serverapp, http_server_client, jp_auth_header, jp_http_port, jp_base_url):
     """Sends a websocket request to a test server.
 
     The fixture is a factory; it can be called like
@@ -411,9 +394,7 @@ def jp_ws_fetch(
         path_url = url_escape(url_path_join(*parts), plus=False)
         base_path_url = url_path_join(jp_base_url, path_url)
         urlparts = urllib.parse.urlparse("ws://localhost:{}".format(jp_http_port))
-        urlparts = urlparts._replace(
-            path=base_path_url, query=urllib.parse.urlencode(params)
-        )
+        urlparts = urlparts._replace(path=base_path_url, query=urllib.parse.urlencode(params))
         url = urlparts.geturl()
         # Add auth keys to header
         headers.update(jp_auth_header)
@@ -492,9 +473,7 @@ def jp_cleanup_subprocesses(jp_serverapp):
     """Clean up subprocesses started by a Jupyter Server, i.e. kernels and terminal."""
 
     async def _():
-        terminal_cleanup = jp_serverapp.web_app.settings[
-            "terminal_manager"
-        ].terminate_all
+        terminal_cleanup = jp_serverapp.web_app.settings["terminal_manager"].terminate_all
         kernel_cleanup = jp_serverapp.kernel_manager.shutdown_all
         if asyncio.iscoroutinefunction(terminal_cleanup):
             try:

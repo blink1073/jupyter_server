@@ -3,10 +3,9 @@ import io
 import os
 
 from anyio.to_thread import run_sync
-from tornado import web
-
 from jupyter_server.services.contents.filemanager import AsyncFileContentsManager
 from jupyter_server.services.contents.filemanager import FileContentsManager
+from tornado import web
 
 
 class LargeFileManager(FileContentsManager):
@@ -23,9 +22,7 @@ class LargeFileManager(FileContentsManager):
             if model["type"] != "file":
                 raise web.HTTPError(
                     400,
-                    'File type "{}" is not supported for large file transfer'.format(
-                        model["type"]
-                    ),
+                    'File type "{}" is not supported for large file transfer'.format(model["type"]),
                 )
             if "content" not in model and model["type"] != "directory":
                 raise web.HTTPError(400, "No file content provided")
@@ -40,9 +37,7 @@ class LargeFileManager(FileContentsManager):
                         os_path, model["content"], model.get("format")
                     )
                 else:
-                    self._save_large_file(
-                        os_path, model["content"], model.get("format")
-                    )
+                    self._save_large_file(os_path, model["content"], model.get("format"))
             except web.HTTPError:
                 raise
             except Exception as e:
@@ -74,9 +69,7 @@ class LargeFileManager(FileContentsManager):
                 b64_bytes = content.encode("ascii")
                 bcontent = base64.b64decode(b64_bytes)
         except Exception as e:
-            raise web.HTTPError(
-                400, "Encoding error saving %s: %s" % (os_path, e)
-            ) from e
+            raise web.HTTPError(400, "Encoding error saving %s: %s" % (os_path, e)) from e
 
         with self.perm_to_403(os_path):
             if os.path.islink(os_path):
@@ -99,9 +92,7 @@ class AsyncLargeFileManager(AsyncFileContentsManager):
             if model["type"] != "file":
                 raise web.HTTPError(
                     400,
-                    'File type "{}" is not supported for large file transfer'.format(
-                        model["type"]
-                    ),
+                    'File type "{}" is not supported for large file transfer'.format(model["type"]),
                 )
             if "content" not in model and model["type"] != "directory":
                 raise web.HTTPError(400, "No file content provided")
@@ -116,9 +107,7 @@ class AsyncLargeFileManager(AsyncFileContentsManager):
                         os_path, model["content"], model.get("format")
                     )
                 else:
-                    await self._save_large_file(
-                        os_path, model["content"], model.get("format")
-                    )
+                    await self._save_large_file(os_path, model["content"], model.get("format"))
             except web.HTTPError:
                 raise
             except Exception as e:
@@ -150,9 +139,7 @@ class AsyncLargeFileManager(AsyncFileContentsManager):
                 b64_bytes = content.encode("ascii")
                 bcontent = base64.b64decode(b64_bytes)
         except Exception as e:
-            raise web.HTTPError(
-                400, "Encoding error saving %s: %s" % (os_path, e)
-            ) from e
+            raise web.HTTPError(400, "Encoding error saving %s: %s" % (os_path, e)) from e
 
         with self.perm_to_403(os_path):
             if os.path.islink(os_path):

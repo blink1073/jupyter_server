@@ -1,18 +1,16 @@
 import pytest
+from jupyter_server.serverapp import ServerApp
+from jupyter_server.utils import run_sync
 from traitlets.config import Config
 
 from .mockextensions.app import MockExtensionApp
-from jupyter_server.serverapp import ServerApp
-from jupyter_server.utils import run_sync
 
 
 @pytest.fixture
 def jp_server_config(jp_template_dir):
     config = {
         "ServerApp": {
-            "jpserver_extensions": {
-                "jupyter_server.tests.extension.mockextensions": True
-            },
+            "jpserver_extensions": {"jupyter_server.tests.extension.mockextensions": True},
         },
         "MockExtensionApp": {
             "template_paths": [str(jp_template_dir)],

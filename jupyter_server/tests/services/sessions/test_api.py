@@ -6,14 +6,14 @@ import time
 import pytest
 import tornado
 from jupyter_client.ioloop import AsyncIOLoopKernelManager
+from jupyter_server.services.kernels.kernelmanager import AsyncMappingKernelManager
+from jupyter_server.utils import url_path_join
 from nbformat import writes
 from nbformat.v4 import new_notebook
 from tornado.httpclient import HTTPClientError
 from traitlets import default
 
 from ...utils import expected_http_error
-from jupyter_server.services.kernels.kernelmanager import AsyncMappingKernelManager
-from jupyter_server.utils import url_path_join
 
 
 j = lambda r: json.loads(r.body.decode())
@@ -24,12 +24,8 @@ class NewPortsKernelManager(AsyncIOLoopKernelManager):
     def _default_cache_ports(self) -> bool:
         return False
 
-    async def restart_kernel(
-        self, now: bool = False, newports: bool = True, **kw
-    ) -> None:
-        self.log.debug(
-            f"DEBUG**** calling super().restart_kernel with newports={newports}"
-        )
+    async def restart_kernel(self, now: bool = False, newports: bool = True, **kw) -> None:
+        self.log.debug(f"DEBUG**** calling super().restart_kernel with newports={newports}")
         return await super().restart_kernel(now=now, newports=newports, **kw)
 
 
@@ -173,9 +169,7 @@ def assert_session_equality(actual, expected):
     assert_kernel_equality(actual["kernel"], expected["kernel"])
 
 
-async def test_create(
-    session_client, jp_base_url, jp_cleanup_subprocesses, jp_serverapp
-):
+async def test_create(session_client, jp_base_url, jp_cleanup_subprocesses, jp_serverapp):
     # Make sure no sessions exist.
     resp = await session_client.list()
     sessions = j(resp)
@@ -279,9 +273,7 @@ async def test_create_bad_pending(
     await jp_cleanup_subprocesses()
 
 
-async def test_create_file_session(
-    session_client, jp_cleanup_subprocesses, jp_serverapp
-):
+async def test_create_file_session(session_client, jp_cleanup_subprocesses, jp_serverapp):
     resp = await session_client.create("foo/nb1.py", type="file")
     assert resp.code == 201
     newsession = j(resp)
@@ -291,9 +283,7 @@ async def test_create_file_session(
     await jp_cleanup_subprocesses()
 
 
-async def test_create_console_session(
-    session_client, jp_cleanup_subprocesses, jp_serverapp
-):
+async def test_create_console_session(session_client, jp_cleanup_subprocesses, jp_serverapp):
     resp = await session_client.create("foo/abc123", type="console")
     assert resp.code == 201
     newsession = j(resp)
@@ -348,9 +338,7 @@ async def test_create_with_kernel_id(
     await jp_cleanup_subprocesses()
 
 
-async def test_create_with_bad_kernel_id(
-    session_client, jp_cleanup_subprocesses, jp_serverapp
-):
+async def test_create_with_bad_kernel_id(session_client, jp_cleanup_subprocesses, jp_serverapp):
     resp = await session_client.create("foo/nb1.py", type="file")
     assert resp.code == 201
     newsession = j(resp)
@@ -395,9 +383,7 @@ async def test_modify_path(session_client, jp_cleanup_subprocesses, jp_serverapp
     await jp_cleanup_subprocesses()
 
 
-async def test_modify_path_deprecated(
-    session_client, jp_cleanup_subprocesses, jp_serverapp
-):
+async def test_modify_path_deprecated(session_client, jp_cleanup_subprocesses, jp_serverapp):
     resp = await session_client.create("foo/nb1.ipynb")
     newsession = j(resp)
     sid = newsession["id"]
@@ -425,9 +411,7 @@ async def test_modify_type(session_client, jp_cleanup_subprocesses, jp_serverapp
     await jp_cleanup_subprocesses()
 
 
-async def test_modify_kernel_name(
-    session_client, jp_fetch, jp_cleanup_subprocesses, jp_serverapp
-):
+async def test_modify_kernel_name(session_client, jp_fetch, jp_cleanup_subprocesses, jp_serverapp):
     resp = await session_client.create("foo/nb1.ipynb")
     before = j(resp)
     sid = before["id"]
@@ -452,9 +436,7 @@ async def test_modify_kernel_name(
     await jp_cleanup_subprocesses()
 
 
-async def test_modify_kernel_id(
-    session_client, jp_fetch, jp_cleanup_subprocesses, jp_serverapp
-):
+async def test_modify_kernel_id(session_client, jp_fetch, jp_cleanup_subprocesses, jp_serverapp):
     resp = await session_client.create("foo/nb1.ipynb")
     before = j(resp)
     sid = before["id"]

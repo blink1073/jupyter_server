@@ -2,7 +2,6 @@ import os
 import pathlib
 
 import pytest
-
 from jupyter_server import DEFAULT_JUPYTER_SERVER_PORT
 
 

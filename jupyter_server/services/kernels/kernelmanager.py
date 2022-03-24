@@ -16,6 +16,11 @@ from jupyter_client.multikernelmanager import AsyncMultiKernelManager
 from jupyter_client.multikernelmanager import MultiKernelManager
 from jupyter_client.session import Session
 from jupyter_core.paths import exists
+from jupyter_server._tz import isoformat
+from jupyter_server._tz import utcnow
+from jupyter_server.prometheus.metrics import KERNEL_CURRENTLY_RUNNING_TOTAL
+from jupyter_server.utils import ensure_async
+from jupyter_server.utils import to_os_path
 from tornado import web
 from tornado.concurrent import Future
 from tornado.ioloop import IOLoop
@@ -31,12 +36,6 @@ from traitlets import List
 from traitlets import TraitError
 from traitlets import Unicode
 from traitlets import validate
-
-from jupyter_server._tz import isoformat
-from jupyter_server._tz import utcnow
-from jupyter_server.prometheus.metrics import KERNEL_CURRENTLY_RUNNING_TOTAL
-from jupyter_server.utils import ensure_async
-from jupyter_server.utils import to_os_path
 
 
 class MappingKernelManager(MultiKernelManager):
@@ -167,9 +166,7 @@ class MappingKernelManager(MultiKernelManager):
     traceback_replacement_message = Unicode(
         "An exception occurred at runtime, which is not shown due to security reasons.",
         config=True,
-        help=(
-            "Message to print when allow_tracebacks is False, and an exception occurs"
-        ),
+        help=("Message to print when allow_tracebacks is False, and an exception occurs"),
     )
 
     # -------------------------------------------------------------------------
@@ -211,9 +208,7 @@ class MappingKernelManager(MultiKernelManager):
                 kwargs["cwd"] = self.cwd_for_path(path)
             if kernel_id is not None:
                 kwargs["kernel_id"] = kernel_id
-            kernel_id = await ensure_async(
-                self.pinned_superclass.start_kernel(self, **kwargs)
-            )
+            kernel_id = await ensure_async(self.pinned_superclass.start_kernel(self, **kwargs))
             self._kernel_connections[kernel_id] = 0
             fut = asyncio.ensure_future(self._finish_kernel_start(kernel_id))
             if not getattr(self, "use_pending_kernels", None):
@@ -228,9 +223,7 @@ class MappingKernelManager(MultiKernelManager):
 
             # Increase the metric of number of kernels running
             # for the relevant kernel type by 1
-            KERNEL_CURRENTLY_RUNNING_TOTAL.labels(
-                type=self._kernels[kernel_id].kernel_name
-            ).inc()
+            KERNEL_CURRENTLY_RUNNING_TOTAL.labels(type=self._kernels[kernel_id].kernel_name).inc()
 
         else:
             self.log.info("Using existing kernel: %s" % kernel_id)
@@ -394,13 +387,9 @@ class MappingKernelManager(MultiKernelManager):
 
         # Decrease the metric of number of kernels
         # running for the relevant kernel type by 1
-        KERNEL_CURRENTLY_RUNNING_TOTAL.labels(
-            type=self._kernels[kernel_id].kernel_name
-        ).dec()
+        KERNEL_CURRENTLY_RUNNING_TOTAL.labels(type=self._kernels[kernel_id].kernel_name).dec()
 
-        self.pinned_superclass.shutdown_kernel(
-            self, kernel_id, now=now, restart=restart
-        )
+        self.pinned_superclass.shutdown_kernel(self, kernel_id, now=now, restart=restart)
         # Unlike its async sibling method in AsyncMappingKernelManager, removing the kernel_id
         # from the connections dictionary isn't as problematic before the shutdown since the
         # method is synchronous.  However, we'll keep the relative call orders the same from
@@ -411,9 +400,7 @@ class MappingKernelManager(MultiKernelManager):
     async def restart_kernel(self, kernel_id, now=False):
         """Restart a kernel by kernel_id"""
         self._check_kernel_id(kernel_id)
-        await ensure_async(
-            self.pinned_superclass.restart_kernel(self, kernel_id, now=now)
-        )
+        await ensure_async(self.pinned_superclass.restart_kernel(self, kernel_id, now=now))
         kernel = self.get_kernel(kernel_id)
         # return a Future that will resolve when the kernel has successfully restarted
         channel = kernel.connect_shell()
@@ -660,9 +647,7 @@ class AsyncMappingKernelManager(MappingKernelManager, AsyncMultiKernelManager):
 
         # Decrease the metric of number of kernels
         # running for the relevant kernel type by 1
-        KERNEL_CURRENTLY_RUNNING_TOTAL.labels(
-            type=self._kernels[kernel_id].kernel_name
-        ).dec()
+        KERNEL_CURRENTLY_RUNNING_TOTAL.labels(type=self._kernels[kernel_id].kernel_name).dec()
 
         # Finish shutting down the kernel before clearing state to avoid a race condition.
         ret = await self.pinned_superclass.shutdown_kernel(

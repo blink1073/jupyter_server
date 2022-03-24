@@ -15,6 +15,9 @@ from ipython_genutils.importstring import import_item
 from jupyter_core.paths import exists
 from jupyter_core.paths import is_file_hidden
 from jupyter_core.paths import is_hidden
+from jupyter_server import _tz as tz
+from jupyter_server.base.handlers import AuthenticatedFileHandler
+from jupyter_server.transutils import _i18n
 from send2trash import send2trash
 from tornado import web
 from traitlets import Any
@@ -30,9 +33,6 @@ from .fileio import AsyncFileManagerMixin
 from .fileio import FileManagerMixin
 from .manager import AsyncContentsManager
 from .manager import ContentsManager
-from jupyter_server import _tz as tz
-from jupyter_server.base.handlers import AuthenticatedFileHandler
-from jupyter_server.transutils import _i18n
 
 try:
     from os.path import samefile
@@ -271,9 +271,7 @@ class FileContentsManager(FileManagerMixin, ContentsManager):
         if not os.path.isdir(os_path):
             raise web.HTTPError(404, four_o_four)
         elif is_hidden(os_path, self.root_dir) and not self.allow_hidden:
-            self.log.info(
-                "Refusing to serve hidden directory %r, via 404 Error", os_path
-            )
+            self.log.info("Refusing to serve hidden directory %r, via 404 Error", os_path)
             raise web.HTTPError(404, four_o_four)
 
         model = self._base_model(path)
@@ -295,9 +293,7 @@ class FileContentsManager(FileManagerMixin, ContentsManager):
                     # skip over broken symlinks in listing
                     if e.errno == errno.ENOENT:
                         self.log.warning("%s doesn't exist", os_path)
-                    elif (
-                        e.errno != errno.EACCES
-                    ):  # Don't provide clues about protected files
+                    elif e.errno != errno.EACCES:  # Don't provide clues about protected files
                         self.log.warning("Error stat-ing %s: %s", os_path, e)
                     continue
 
@@ -311,12 +307,8 @@ class FileContentsManager(FileManagerMixin, ContentsManager):
 
                 try:
                     if self.should_list(name):
-                        if self.allow_hidden or not is_file_hidden(
-                            os_path, stat_res=st
-                        ):
-                            contents.append(
-                                self.get(path="%s/%s" % (path, name), content=False)
-                            )
+                        if self.allow_hidden or not is_file_hidden(os_path, stat_res=st):
+                            contents.append(self.get(path="%s/%s" % (path, name), content=False))
                 except OSError as e:
                     # ELOOP: recursive symlink, also don't show failure due to permissions
                     if e.errno not in [errno.ELOOP, errno.EACCES]:
@@ -421,9 +413,7 @@ class FileContentsManager(FileManagerMixin, ContentsManager):
             model = self._notebook_model(path, content=content)
         else:
             if type == "directory":
-                raise web.HTTPError(
-                    400, "%s is not a directory" % path, reason="bad type"
-                )
+                raise web.HTTPError(400, "%s is not a directory" % path, reason="bad type")
             model = self._file_model(path, content=content, format=format)
         return model
 
@@ -472,9 +462,7 @@ class FileContentsManager(FileManagerMixin, ContentsManager):
             raise
         except Exception as e:
             self.log.error("Error while saving file: %s %s", path, e, exc_info=True)
-            raise web.HTTPError(
-                500, "Unexpected error while saving file: %s %s" % (path, e)
-            ) from e
+            raise web.HTTPError(500, "Unexpected error while saving file: %s %s" % (path, e)) from e
 
         validation_message = None
         if model["type"] == "notebook":
@@ -519,11 +507,7 @@ class FileContentsManager(FileManagerMixin, ContentsManager):
             return False
 
         if self.delete_to_trash:
-            if (
-                not self.always_delete_dir
-                and sys.platform == "win32"
-                and is_non_empty_dir(os_path)
-            ):
+            if not self.always_delete_dir and sys.platform == "win32" and is_non_empty_dir(os_path):
                 # send2trash can really delete files on Windows, so disallow
                 # deleting non-empty files. See Github issue 3631.
                 raise web.HTTPError(400, "Directory %s not empty" % os_path)
@@ -573,9 +557,7 @@ class FileContentsManager(FileManagerMixin, ContentsManager):
         except web.HTTPError:
             raise
         except Exception as e:
-            raise web.HTTPError(
-                500, "Unknown error renaming file: %s %s" % (old_path, e)
-            ) from e
+            raise web.HTTPError(500, "Unknown error renaming file: %s %s" % (old_path, e)) from e
 
     def info_string(self):
         return _i18n("Serving notebooks from local directory: %s") % self.root_dir
@@ -591,9 +573,7 @@ class FileContentsManager(FileManagerMixin, ContentsManager):
         return parent_dir
 
 
-class AsyncFileContentsManager(
-    FileContentsManager, AsyncFileManagerMixin, AsyncContentsManager
-):
+class AsyncFileContentsManager(FileContentsManager, AsyncFileManagerMixin, AsyncContentsManager):
     @default("checkpoints_class")
     def _checkpoints_class_default(self):
         return AsyncFileCheckpoints
@@ -610,9 +590,7 @@ class AsyncFileContentsManager(
         if not os.path.isdir(os_path):
             raise web.HTTPError(404, four_o_four)
         elif is_hidden(os_path, self.root_dir) and not self.allow_hidden:
-            self.log.info(
-                "Refusing to serve hidden directory %r, via 404 Error", os_path
-            )
+            self.log.info("Refusing to serve hidden directory %r, via 404 Error", os_path)
             raise web.HTTPError(404, four_o_four)
 
         model = self._base_model(path)
@@ -635,9 +613,7 @@ class AsyncFileContentsManager(
                     # skip over broken symlinks in listing
                     if e.errno == errno.ENOENT:
                         self.log.warning("%s doesn't exist", os_path)
-                    elif (
-                        e.errno != errno.EACCES
-                    ):  # Don't provide clues about protected files
+                    elif e.errno != errno.EACCES:  # Don't provide clues about protected files
                         self.log.warning("Error stat-ing %s: %s", os_path, e)
                     continue
 
@@ -651,13 +627,9 @@ class AsyncFileContentsManager(
 
                 try:
                     if self.should_list(name):
-                        if self.allow_hidden or not is_file_hidden(
-                            os_path, stat_res=st
-                        ):
+                        if self.allow_hidden or not is_file_hidden(os_path, stat_res=st):
                             contents.append(
-                                await self.get(
-                                    path="%s/%s" % (path, name), content=False
-                                )
+                                await self.get(path="%s/%s" % (path, name), content=False)
                             )
                 except OSError as e:
                     # ELOOP: recursive symlink, also don't show failure due to permissions
@@ -763,9 +735,7 @@ class AsyncFileContentsManager(
             model = await self._notebook_model(path, content=content)
         else:
             if type == "directory":
-                raise web.HTTPError(
-                    400, "%s is not a directory" % path, reason="bad type"
-                )
+                raise web.HTTPError(400, "%s is not a directory" % path, reason="bad type")
             model = await self._file_model(path, content=content, format=format)
         return model
 
@@ -814,9 +784,7 @@ class AsyncFileContentsManager(
             raise
         except Exception as e:
             self.log.error("Error while saving file: %s %s", path, e, exc_info=True)
-            raise web.HTTPError(
-                500, "Unexpected error while saving file: %s %s" % (path, e)
-            ) from e
+            raise web.HTTPError(500, "Unexpected error while saving file: %s %s" % (path, e)) from e
 
         validation_message = None
         if model["type"] == "notebook":
@@ -916,6 +884,4 @@ class AsyncFileContentsManager(
         except web.HTTPError:
             raise
         except Exception as e:
-            raise web.HTTPError(
-                500, "Unknown error renaming file: %s %s" % (old_path, e)
-            ) from e
+            raise web.HTTPError(500, "Unknown error renaming file: %s %s" % (old_path, e)) from e
