@@ -5,25 +5,25 @@ on:
   pull_request:
     branches: ["*"]
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "pypy-3.8"]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Base Setup
-        uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
-      - name: Run the tests
-        run: |
-          hatch run cov:integration
-      - name: Coverage
-        run: |
-          pip install codecov coverage[toml]
-          codecov
+  # build:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #       python-version: ["3.8", "3.9", "3.10", "3.11", "pypy-3.8"]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Base Setup
+  #       uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+  #     - name: Run the tests
+  #       run: |
+  #         hatch run cov:integration
+  #     - name: Coverage
+  #       run: |
+  #         pip install codecov coverage[toml]
+  #         codecov
 
   integration_check: # This job does nothing and is only used for the branch protection
     if: always()

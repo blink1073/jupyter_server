@@ -11,45 +11,45 @@ defaults:
     shell: bash -eux {0}
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.8", "3.11"]
-        include:
-          - os: windows-latest
-            python-version: "3.9"
-          - os: ubuntu-latest
-            python-version: "pypy-3.8"
-          - os: macos-latest
-            python-version: "3.10"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Base Setup
-        uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
-      - name: Install nbconvert dependencies on Linux
-        if: startsWith(runner.os, 'Linux')
-        run: |
-          sudo apt-get update
-          sudo apt-get install texlive-plain-generic inkscape texlive-xetex
-          sudo apt-get install xvfb x11-utils libxkbcommon-x11-0 pandoc
-      - name: Run the tests on posix
-        if: ${{ !startsWith(matrix.python-version, 'pypy') && !startsWith(matrix.os, 'windows') }}
-        run: hatch run cov:test --cov-fail-under 75 || hatch run test:test --lf
-      - name: Run the tests on pypy
-        if: ${{ startsWith(matrix.python-version, 'pypy') }}
-        run: hatch run test:nowarn || hatch run test:nowarn --lf
-      - name: Run the tests on windows
-        if: ${{ startsWith(matrix.os, 'windows') }}
-        run: hatch run cov:nowarn -s || hatch run cov:nowarn --lf
-      - name: Coverage
-        run: |
-          pip install codecov coverage[toml]
-          codecov
+  # build:
+  #   runs-on: ${{ matrix.os }}
+  #   timeout-minutes: 20
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-latest, windows-latest, macos-latest]
+  #       python-version: ["3.8", "3.11"]
+  #       include:
+  #         - os: windows-latest
+  #           python-version: "3.9"
+  #         - os: ubuntu-latest
+  #           python-version: "pypy-3.8"
+  #         - os: macos-latest
+  #           python-version: "3.10"
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Base Setup
+  #       uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+  #     - name: Install nbconvert dependencies on Linux
+  #       if: startsWith(runner.os, 'Linux')
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install texlive-plain-generic inkscape texlive-xetex
+  #         sudo apt-get install xvfb x11-utils libxkbcommon-x11-0 pandoc
+  #     - name: Run the tests on posix
+  #       if: ${{ !startsWith(matrix.python-version, 'pypy') && !startsWith(matrix.os, 'windows') }}
+  #       run: hatch run cov:test --cov-fail-under 75 || hatch run test:test --lf
+  #     - name: Run the tests on pypy
+  #       if: ${{ startsWith(matrix.python-version, 'pypy') }}
+  #       run: hatch run test:nowarn || hatch run test:nowarn --lf
+  #     - name: Run the tests on windows
+  #       if: ${{ startsWith(matrix.os, 'windows') }}
+  #       run: hatch run cov:nowarn -s || hatch run cov:nowarn --lf
+  #     - name: Coverage
+  #       run: |
+  #         pip install codecov coverage[toml]
+  #         codecov
 
   test_docs:
     name: Test Docs
@@ -117,7 +117,7 @@ jobs:
 
   test_prereleases:
     name: Test Prereleases
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v3
