@@ -1,7 +1,9 @@
 import getpass
+import json
 import logging
 import os
 import pathlib
+import sys
 import warnings
 from unittest.mock import patch
 
@@ -14,6 +16,7 @@ from traitlets.tests.utils import check_help_all_output
 from jupyter_server.auth.security import passwd_check
 from jupyter_server.serverapp import (
     JupyterPasswordApp,
+    JupyterServerListApp,
     ServerApp,
     ServerWebApplication,
     list_running_servers,
@@ -34,6 +37,49 @@ def jp_file_contents_manager_class(request, tmp_path):
 def test_help_output():
     """jupyter server --help-all works"""
     check_help_all_output("jupyter_server")
+
+
+@pytest.mark.parametrize(
+    "format",
+    [
+        "json",
+        "jsonlist",
+        "",
+    ],
+)
+def test_server_list(jp_configurable_serverapp, capsys, format):
+    app = jp_configurable_serverapp(log=logging.getLogger())
+
+    app.write_server_info_file()
+
+    capsys.readouterr()
+    listapp = JupyterServerListApp(
+        parent=app,
+    )
+    if format:
+        setattr(listapp, format, True)
+    listapp.start()
+    captured = capsys.readouterr()
+    sys.stdout.write(captured.out)
+    sys.stderr.write(captured.err)
+    out = captured.out.strip()
+
+    if not format:
+        assert "Currently running servers:" in out
+        assert app.connection_url in out
+        assert len(out.splitlines()) == 2
+        return
+
+    if format == "jsonlist":
+        servers = json.loads(out)
+    elif format == "json":
+        servers = [json.loads(line) for line in out.splitlines()]
+    assert len(servers) == 1
+    sinfo = servers[0]
+
+    assert sinfo["port"] == app.port
+    assert sinfo["url"] == app.connection_url
+    assert sinfo["version"] == app.version
 
 
 def test_server_info_file(tmp_path, jp_configurable_serverapp):
@@ -479,7 +525,7 @@ def test_server_web_application(jp_serverapp):
             server.kernel_manager,
             server.config_manager,
             server.event_logger,
-            ["jupyter_server.gateway.handlers"],
+            [],
             server.log,
             server.base_url,
             server.default_url,
@@ -561,3 +607,13 @@ def test_deprecated_notebook_dir_priority(jp_configurable_serverapp, tmp_path):
     cfg.ServerApp.notebook_dir = str(notebook_dir)
     app.update_config(cfg)
     assert app.root_dir == str(cli_dir)
+
+
+def test_immutable_cache_trait():
+    # Verify we're working with a clean instance.
+    ServerApp.clear_instance()
+    kwargs = {"static_immutable_cache": "/test/immutable"}
+    serverapp = ServerApp.instance(**kwargs)
+    serverapp.init_configurables()
+    serverapp.init_webapp()
+    assert serverapp.web_app.settings["static_immutable_cache"] == ["/test/immutable"]

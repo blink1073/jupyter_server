@@ -15,15 +15,22 @@ from unittest.mock import MagicMock, patch
 import pytest
 import tornado
 from jupyter_core.utils import ensure_async
+from tornado.concurrent import Future
 from tornado.httpclient import HTTPRequest, HTTPResponse
+from tornado.httputil import HTTPServerRequest
+from tornado.queues import Queue
 from tornado.web import HTTPError
 from traitlets import Int, Unicode
 from traitlets.config import Config
 
+from jupyter_server.gateway.connections import GatewayWebSocketConnection
 from jupyter_server.gateway.gateway_client import GatewayTokenRenewerBase, NoOpTokenRenewer
 from jupyter_server.gateway.managers import ChannelQueue, GatewayClient, GatewayKernelManager
+from jupyter_server.services.kernels.websocket import KernelWebsocketHandler
 
 from .utils import expected_http_error
+
+pytest_plugins = ["jupyter_events.pytest_plugin"]
 
 
 def generate_kernelspec(name):
@@ -483,12 +490,27 @@ async def test_gateway_session_lifecycle(init_gateway, jp_root_dir, jp_fetch, cu
 
 @pytest.mark.parametrize("cull_kernel", [False, True])
 async def test_gateway_kernel_lifecycle(
-    init_gateway, jp_serverapp, jp_ws_fetch, jp_fetch, cull_kernel
+    init_gateway,
+    jp_configurable_serverapp,
+    jp_read_emitted_events,
+    jp_event_handler,
+    jp_ws_fetch,
+    jp_fetch,
+    cull_kernel,
 ):
     # Validate kernel lifecycle functions; create, interrupt, restart and delete.
 
+    app = jp_configurable_serverapp()
+    app.event_logger.register_handler(jp_event_handler)
+
     # create
     kernel_id = await create_kernel(jp_fetch, "kspec_bar")
+
+    output = jp_read_emitted_events()[0]
+    assert "action" in output and output["action"] == "start"
+    assert "msg" in output
+    assert "kernel_id" in output and kernel_id == output["kernel_id"]
+    assert "status" in output and output["status"] == "success"
 
     # ensure kernel still considered running
     assert await is_kernel_running(jp_fetch, kernel_id) is True
@@ -502,11 +524,23 @@ async def test_gateway_kernel_lifecycle(
     # interrupt
     await interrupt_kernel(jp_fetch, kernel_id)
 
+    output = jp_read_emitted_events()[0]
+    assert "action" in output and output["action"] == "interrupt"
+    assert "msg" in output
+    assert "kernel_id" in output and kernel_id == output["kernel_id"]
+    assert "status" in output and output["status"] == "success"
+
     # ensure kernel still considered running
     assert await is_kernel_running(jp_fetch, kernel_id) is True
 
     # restart
     await restart_kernel(jp_fetch, kernel_id)
+
+    output = jp_read_emitted_events()[0]
+    assert "action" in output and output["action"] == "restart"
+    assert "msg" in output
+    assert "kernel_id" in output and kernel_id == output["kernel_id"]
+    assert "status" in output and output["status"] == "success"
 
     # ensure kernel still considered running
     assert await is_kernel_running(jp_fetch, kernel_id) is True
@@ -525,6 +559,12 @@ async def test_gateway_kernel_lifecycle(
         assert expected_http_error(e, 404)
     else:
         await delete_kernel(jp_fetch, kernel_id)
+
+        output = jp_read_emitted_events()[0]
+        assert "action" in output and output["action"] == "shutdown"
+        assert "msg" in output
+        assert "kernel_id" in output and kernel_id == output["kernel_id"]
+        assert "status" in output and output["status"] == "success"
 
     assert await is_kernel_running(jp_fetch, kernel_id) is False
 
@@ -622,6 +662,61 @@ async def test_channel_queue_get_msg_when_response_router_had_finished():
 
     with pytest.raises(RuntimeError):
         await queue.get_msg()
+
+
+class MockWebSocketClientConnection(tornado.websocket.WebSocketClientConnection):
+    def __init__(self, *args, **kwargs):
+        self._msgs: Queue = Queue(2)
+        self._msgs.put_nowait('{"msg_type": "status", "content": {"execution_state": "starting"}}')
+
+    def write_message(self, message, *args, **kwargs):
+        return self._msgs.put(message)
+
+    def read_message(self, *args, **kwargs):
+        return self._msgs.get()
+
+
+def mock_websocket_connect():
+    def helper(request):
+        fut: Future = Future()
+        mock_client = MockWebSocketClientConnection()
+        fut.set_result(mock_client)
+        return fut
+
+    return helper
+
+
+@patch("tornado.websocket.websocket_connect", mock_websocket_connect())
+async def test_websocket_connection_closed(init_gateway, jp_serverapp, jp_fetch, caplog):
+    # Create the kernel and get the kernel manager...
+    kernel_id = await create_kernel(jp_fetch, "kspec_foo")
+    km: GatewayKernelManager = jp_serverapp.kernel_manager.get_kernel(kernel_id)
+
+    # Create the KernelWebsocketHandler...
+    request = HTTPServerRequest("foo", "GET")
+    request.connection = MagicMock()
+    handler = KernelWebsocketHandler(jp_serverapp.web_app, request)
+
+    # Force the websocket handler to raise a closed error if we try to write a message
+    # to the client.
+    handler.ws_connection = MagicMock()
+    handler.ws_connection.is_closing = lambda: True
+
+    # Create the GatewayWebSocketConnection and attach it to the handler...
+    conn = GatewayWebSocketConnection(parent=km, websocket_handler=handler)
+    handler.connection = conn
+    await conn.connect()
+
+    # Processing websocket messages happens in separate coroutines and any
+    # errors in that process will show up in logs, but not bubble up to the
+    # caller.
+    #
+    # To check for these, we wait for the server to stop and then check the
+    # logs for errors.
+    await jp_serverapp._cleanup()
+    for _, level, message in caplog.record_tuples:
+        if level >= logging.ERROR:
+            pytest.fail(f"Logs contain an error: {message}")
 
 
 #
