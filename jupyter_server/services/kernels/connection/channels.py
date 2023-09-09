@@ -410,7 +410,10 @@ class ZMQChannelsWebsocketConnection(BaseKernelWebsocketConnection):
             )
 
             # start buffering instead of closing if this was the last connection
-            if self.multi_kernel_manager._kernel_connections[self.kernel_id] == 0:
+            if (
+                self.kernel_id in self.multi_kernel_manager._kernel_connections
+                and self.multi_kernel_manager._kernel_connections[self.kernel_id] == 0
+            ):
                 self.multi_kernel_manager.start_buffering(
                     self.kernel_id, self.session_key, self.channels
                 )
@@ -644,7 +647,7 @@ class ZMQChannelsWebsocketConnection(BaseKernelWebsocketConnection):
             err_msg["channel"] = "iopub"
             self.write_message(json.dumps(err_msg, default=json_default))
 
-    def _limit_rate(self, channel, msg, msg_list):  # noqa
+    def _limit_rate(self, channel, msg, msg_list):
         """Limit the message rate on a channel."""
         if not (self.limit_rate and channel == "iopub"):
             return False
@@ -700,7 +703,7 @@ class ZMQChannelsWebsocketConnection(BaseKernelWebsocketConnection):
                     )
                     self.write_stderr(
                         dedent(
-                            """\
+                            f"""\
                     IOPub message rate exceeded.
                     The Jupyter server will temporarily stop sending output
                     to the client in order to avoid crashing it.
@@ -708,11 +711,9 @@ class ZMQChannelsWebsocketConnection(BaseKernelWebsocketConnection):
                     `--ServerApp.iopub_msg_rate_limit`.
 
                     Current values:
-                    ServerApp.iopub_msg_rate_limit={} (msgs/sec)
-                    ServerApp.rate_limit_window={} (secs)
-                    """.format(
-                                self.iopub_msg_rate_limit, self.rate_limit_window
-                            )
+                    ServerApp.iopub_msg_rate_limit={self.iopub_msg_rate_limit} (msgs/sec)
+                    ServerApp.rate_limit_window={self.rate_limit_window} (secs)
+                    """
                         ),
                         msg["parent_header"],
                     )
@@ -731,7 +732,7 @@ class ZMQChannelsWebsocketConnection(BaseKernelWebsocketConnection):
                     )
                     self.write_stderr(
                         dedent(
-                            """\
+                            f"""\
                     IOPub data rate exceeded.
                     The Jupyter server will temporarily stop sending output
                     to the client in order to avoid crashing it.
@@ -739,11 +740,9 @@ class ZMQChannelsWebsocketConnection(BaseKernelWebsocketConnection):
                     `--ServerApp.iopub_data_rate_limit`.
 
                     Current values:
-                    ServerApp.iopub_data_rate_limit={} (bytes/sec)
-                    ServerApp.rate_limit_window={} (secs)
-                    """.format(
-                                self.iopub_data_rate_limit, self.rate_limit_window
-                            )
+                    ServerApp.iopub_data_rate_limit={self.iopub_data_rate_limit} (bytes/sec)
+                    ServerApp.rate_limit_window={self.rate_limit_window} (secs)
+                    """
                         ),
                         msg["parent_header"],
                     )

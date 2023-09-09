@@ -526,15 +526,8 @@ such that request_timeout >= KERNEL_LAUNCH_TIMEOUT + launch_timeout_pad.
             # protects backward-compatible config from warnings
             # if they set the same value under both names
             self.log.warning(
-                (
-                    "{cls}.{old} is deprecated in jupyter_server "
-                    "{version}, use {cls}.{new} instead"
-                ).format(
-                    cls=self.__class__.__name__,
-                    old=old_attr,
-                    new=new_attr,
-                    version=version,
-                )
+                f"{self.__class__.__name__}.{old_attr} is deprecated in jupyter_server "
+                f"{version}, use {self.__class__.__name__}.{new_attr} instead"
             )
             setattr(self, new_attr, change.new)
 
@@ -578,7 +571,7 @@ such that request_timeout >= KERNEL_LAUNCH_TIMEOUT + launch_timeout_pad.
         os.environ["KERNEL_LAUNCH_TIMEOUT"] = str(GatewayClient.KERNEL_LAUNCH_TIMEOUT)
 
         self._connection_args["headers"] = json.loads(self.headers)
-        if self.auth_header_key not in self._connection_args["headers"].keys():
+        if self.auth_header_key not in self._connection_args["headers"]:
             self._connection_args["headers"].update(
                 {f"{self.auth_header_key}": f"{self.auth_scheme} {self.auth_token}"}
             )
@@ -734,7 +727,7 @@ class RetryableHTTPClient:
                 raise e
             logging.getLogger("ServerApp").info(
                 f"Attempting retry ({self.retry_count}) against "
-                f"endpoint '{endpoint}'.  Retried error: '{repr(e)}'"
+                f"endpoint '{endpoint}'.  Retried error: '{e!r}'"
             )
             response = await self._fetch(endpoint, **kwargs)
         return response
@@ -767,6 +760,9 @@ async def gateway_request(endpoint: str, **kwargs: ty.Any) -> HTTPResponse:
     rhc = RetryableHTTPClient()
     try:
         response = await rhc.fetch(endpoint, **kwargs)
+        GatewayClient.instance().emit(
+            data={STATUS_KEY: SUCCESS_STATUS, STATUS_CODE_KEY: 200, MESSAGE_KEY: "success"}
+        )
     # Trap a set of common exceptions so that we can inform the user that their Gateway url is incorrect
     # or the server is not running.
     # NOTE: We do this here since this handler is called during the server's startup and subsequent refreshes
@@ -808,6 +804,15 @@ async def gateway_request(endpoint: str, **kwargs: ty.Any) -> HTTPResponse:
             f"The Gateway server specified in the gateway_url '{GatewayClient.instance().url}' doesn't "
             f"appear to be valid.  Ensure gateway url is valid and the Gateway instance is running.",
         ) from e
+    except Exception as e:
+        GatewayClient.instance().emit(
+            data={STATUS_KEY: ERROR_STATUS, STATUS_CODE_KEY: 505, MESSAGE_KEY: str(e)}
+        )
+        logging.getLogger("ServerApp").error(
+            f"Exception while trying to launch kernel via Gateway URL {GatewayClient.instance().url} , {e}",
+            e,
+        )
+        raise e
 
     if GatewayClient.instance().accept_cookies:
         # Update cookies on GatewayClient from server if configured.

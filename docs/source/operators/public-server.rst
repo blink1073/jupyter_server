@@ -37,7 +37,7 @@ This document describes how you can
 
 .. _ZeroMQ: https://zeromq.org/
 
-.. _Tornado: with Found to http://www.tornadoweb.org/en/stable/
+.. _Tornado: http://www.tornadoweb.org/en/stable/
 
 .. _JupyterHub: https://jupyterhub.readthedocs.io/en/latest/
 
@@ -111,7 +111,7 @@ Preparing a hashed password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can prepare a hashed password manually, using the function
-:func:`notebook.auth.security.passwd`:
+:func:`jupyter_server.auth.passwd`:
 
 .. code-block:: python
 
@@ -123,7 +123,7 @@ You can prepare a hashed password manually, using the function
 
 .. caution::
 
-  :func:`~notebook.auth.security.passwd` when called with no arguments
+  :func:`~jupyter_server.auth.passwd` when called with no arguments
   will prompt you to enter and verify your password such as
   in the above code snippet. Although the function can also
   be passed a string as an argument such as ``passwd('mypassword')``, please
@@ -327,19 +327,6 @@ with the following configuration setting in
             'Content-Security-Policy': "frame-ancestors https://mywebsite.example.com 'self' "
         }
     }
-
-When embedding the notebook in a website using an iframe,
-consider putting the notebook in single-tab mode.
-Since the notebook opens some links in new tabs by default,
-single-tab mode keeps the notebook from opening additional tabs.
-Adding the following to :file:`~/.jupyter/custom/custom.js` will enable
-single-tab mode:
-
-.. code-block:: javascript
-
-    define(['base/js/namespace'], function(Jupyter){
-        Jupyter._target = '_self';
-    });
 
 
 Using a gateway server for kernel management

@@ -403,10 +403,7 @@ class JupyterHandler(AuthenticatedHandler):
         escaped_filename = url_escape(filename)
         self.set_header(
             "Content-Disposition",
-            "attachment;"
-            " filename*=utf-8''{utf8}".format(
-                utf8=escaped_filename,
-            ),
+            f"attachment; filename*=utf-8''{escaped_filename}",
         )
 
     def get_origin(self):
@@ -771,7 +768,7 @@ class APIHandler(JupyterHandler):
         # record activity of authenticated requests
         if (
             self._track_activity
-            and getattr(self, "_user_cache", None)
+            and getattr(self, "_jupyter_current_user", None)
             and self.get_argument("no_track_activity", None) is None
         ):
             self.settings["api_last_activity"] = utcnow()
@@ -855,6 +852,7 @@ class AuthenticatedFileHandler(JupyterHandler, web.StaticFileHandler):
     @authorized
     def get(self, path, **kwargs):
         """Get a file by path."""
+        self.check_xsrf_cookie()
         if os.path.splitext(path)[1] == ".ipynb" or self.get_argument("download", None):
             name = path.rsplit("/", 1)[-1]
             self.set_attachment_header(name)
@@ -1015,6 +1013,8 @@ class FileFindHandler(JupyterHandler, web.StaticFileHandler):
 
 class APIVersionHandler(APIHandler):
     """An API handler for the server version."""
+
+    _track_activity = False
 
     def get(self):
         """Get the server version info."""

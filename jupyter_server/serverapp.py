@@ -24,7 +24,9 @@ import time
 import urllib
 import warnings
 from base64 import encodebytes
+from pathlib import Path
 
+import jupyter_client
 from jupyter_client.kernelspec import KernelSpecManager
 from jupyter_client.manager import KernelManager
 from jupyter_client.session import Session
@@ -309,7 +311,7 @@ class ServerWebApplication(web.Application):
         jenv_opt: dict = {"autoescape": True}
         jenv_opt.update(jinja_env_options if jinja_env_options else {})
 
-        env = Environment(  # noqa[S701]
+        env = Environment(  # noqa: S701
             loader=FileSystemLoader(template_path), extensions=["jinja2.ext.i18n"], **jenv_opt
         )
         sys_info = get_sys_info()
@@ -831,6 +833,7 @@ class ServerApp(JupyterApp):
     )
 
     _log_formatter_cls = LogFormatter  # type:ignore[assignment]
+    _stopping = Bool(False, help="Signal that we've begun stopping.")
 
     @default("log_level")
     def _default_log_level(self):
@@ -1229,7 +1232,7 @@ class ServerApp(JupyterApp):
 
         # if blank, self.ip was configured to "*" meaning bind to all interfaces,
         # see _valdate_ip
-        if self.ip == "":  # noqa
+        if self.ip == "":
             return True
 
         try:
@@ -1638,6 +1641,26 @@ class ServerApp(JupyterApp):
         self.log.warning(_i18n("notebook_dir is deprecated, use root_dir"))
         self.root_dir = change["new"]
 
+    external_connection_dir = Unicode(
+        None,
+        allow_none=True,
+        config=True,
+        help=_i18n(
+            "The directory to look at for external kernel connection files, if allow_external_kernels is True. "
+            "Defaults to Jupyter runtime_dir/external_kernels. "
+            "Make sure that this directory is not filled with left-over connection files, "
+            "that could result in unnecessary kernel manager creations."
+        ),
+    )
+
+    allow_external_kernels = Bool(
+        False,
+        config=True,
+        help=_i18n(
+            "Whether or not to allow external kernels, whose connection files are placed in external_connection_dir."
+        ),
+    )
+
     root_dir = Unicode(config=True, help=_i18n("The directory to use for notebooks and kernels."))
     _root_dir_set = False
 
@@ -1873,12 +1896,26 @@ class ServerApp(JupyterApp):
         self.kernel_spec_manager = self.kernel_spec_manager_class(
             parent=self,
         )
-        self.kernel_manager = self.kernel_manager_class(
-            parent=self,
-            log=self.log,
-            connection_dir=self.runtime_dir,
-            kernel_spec_manager=self.kernel_spec_manager,
-        )
+
+        kwargs = {
+            "parent": self,
+            "log": self.log,
+            "connection_dir": self.runtime_dir,
+            "kernel_spec_manager": self.kernel_spec_manager,
+        }
+        if jupyter_client.version_info > (8, 3, 0):
+            if self.allow_external_kernels:
+                external_connection_dir = self.external_connection_dir
+                if external_connection_dir is None:
+                    external_connection_dir = str(Path(self.runtime_dir) / "external_kernels")
+                kwargs["external_connection_dir"] = external_connection_dir
+        elif self.allow_external_kernels:
+            self.log.warning(
+                "Although allow_external_kernels=True, external kernels are not supported "
+                "because jupyter-client's version does not allow them (should be >8.3.0)."
+            )
+
+        self.kernel_manager = self.kernel_manager_class(**kwargs)
         self.contents_manager = self.contents_manager_class(
             parent=self,
             log=self.log,
@@ -2097,9 +2134,7 @@ class ServerApp(JupyterApp):
             if hard < soft:
                 hard = soft
             self.log.debug(
-                "Raising open file limit: soft {}->{}; hard {}->{}".format(
-                    old_soft, soft, old_hard, hard
-                )
+                f"Raising open file limit: soft {old_soft}->{soft}; hard {old_hard}->{hard}"
             )
             resource.setrlimit(resource.RLIMIT_NOFILE, (soft, hard))
 
@@ -2228,6 +2263,10 @@ class ServerApp(JupyterApp):
                 self.stop(from_signal=True)
                 return
         else:
+            if self._stopping:
+                # don't show 'no answer' if we're actually stopping,
+                # e.g. ctrl-C ctrl-C
+                return
             info(_i18n("No answer for 5s:"))
         info(_i18n("resuming operation..."))
         # no answer, or answer is no:
@@ -2590,11 +2629,7 @@ class ServerApp(JupyterApp):
             info += kernel_msg % n_kernels
             info += "\n"
         # Format the info so that the URL fits on a single line in 80 char display
-        info += _i18n(
-            "Jupyter Server {version} is running at:\n{url}".format(
-                version=ServerApp.version, url=self.display_url
-            )
-        )
+        info += _i18n(f"Jupyter Server {ServerApp.version} is running at:\n{self.display_url}")
         if self.gateway_config.gateway_enabled:
             info += (
                 _i18n("\nKernels will be managed by the Gateway server running at:\n%s")
@@ -2924,6 +2959,8 @@ class ServerApp(JupyterApp):
 
     def stop(self, from_signal=False):
         """Cleanup resources and stop the server."""
+        # signal that stopping has begun
+        self._stopping = True
         if hasattr(self, "http_server"):
             # Stop a server if its set.
             self.http_server.stop()
