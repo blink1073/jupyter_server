@@ -76,7 +76,7 @@ class BaseJSONConfigManager(LoggingConfigurable):
         """Returns the directory name for the section name: {config_dir}/{section_name}.d"""
         return os.path.join(self.config_dir, section_name + ".d")
 
-    def get(self, section_name: str, include_root: bool = True) -> t.Any:
+    def get(self, section_name: str, include_root: bool = True) -> StrDict:
         """Retrieve the config data for the specified section.
 
         Returns the data as a dictionary, or an empty dictionary if the file
@@ -99,14 +99,14 @@ class BaseJSONConfigManager(LoggingConfigurable):
             section_name,
             "\n\t".join(paths),
         )
-        data: dict = {}
+        data: StrDict = {}
         for path in paths:
             if os.path.isfile(path):
                 with open(path, encoding="utf-8") as f:
                     recursive_update(data, json.load(f))
         return data
 
-    def set(self, section_name: str, data: t.Any) -> None:
+    def set(self, section_name: str, data: StrDict) -> None:
         """Store the given config data."""
         filename = self.file_name(section_name)
         self.ensure_config_dir_exists()
@@ -123,7 +123,7 @@ class BaseJSONConfigManager(LoggingConfigurable):
         with open(filename, "w", encoding="utf-8") as f:
             f.write(json_content)
 
-    def update(self, section_name: str, new_data: t.Any) -> None:
+    def update(self, section_name: str, new_data: t.Any) -> StrDict:
         """Modify the config section by recursively updating it with new_data.
 
         Returns the modified config data as a dictionary.

@@ -29,6 +29,7 @@ class ConfigHandler(APIHandler):
     def put(self, section_name):
         """Set a config section by name."""
         data = self.get_json_body()  # Will raise 400 if content is not valid JSON
+        assert isinstance(data, dict)
         self.config_manager.set(section_name, data)
         self.set_status(204)
 
@@ -37,6 +38,7 @@ class ConfigHandler(APIHandler):
     def patch(self, section_name):
         """Update a config section by name."""
         new_data = self.get_json_body()
+        assert isinstance(new_data, dict)
         section = self.config_manager.update(section_name, new_data)
         self.finish(json.dumps(section))
 
