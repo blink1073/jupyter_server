@@ -546,9 +546,7 @@ such that request_timeout >= KERNEL_LAUNCH_TIMEOUT + launch_timeout_pad.
         """Initialize a gateway client."""
         super().__init__(**kwargs)
         self._connection_args = {}  # initialized on first use
-        self.gateway_token_renewer = self.gateway_token_renewer_class(
-            parent=self, log=self.log
-        )  # type:ignore[operator]
+        self.gateway_token_renewer = self.gateway_token_renewer_class(parent=self, log=self.log)  # type:ignore[operator]
 
         # store of cookies with store time
         self._cookies: ty.Dict[str, ty.Tuple[Morsel, datetime]] = {}
@@ -601,7 +599,7 @@ such that request_timeout >= KERNEL_LAUNCH_TIMEOUT + launch_timeout_pad.
 
         # Give token renewal a shot at renewing the token
         prev_auth_token = self.auth_token
-        if self.auth_token:
+        if self.auth_token is not None:
             try:
                 self.auth_token = self.gateway_token_renewer.get_token(
                     self.auth_header_key, self.auth_scheme, self.auth_token
