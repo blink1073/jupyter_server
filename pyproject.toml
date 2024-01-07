@@ -142,6 +142,9 @@ optional-editable-build = true
 [tool.ruff]
 line-length = 100
 
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.ruff.lint]
 select = [
   "B",           # flake8-bugbear
@@ -243,6 +246,7 @@ filterwarnings = [
   "ignore:jupyter_server.base.zmqhandlers module is deprecated in Jupyter Server 2.0:DeprecationWarning",
   "ignore:datetime.datetime.utc:DeprecationWarning:dateutil",
   "ignore:datetime.datetime.utc:DeprecationWarning:tornado",
+  "module:add_callback_from_signal is deprecated:DeprecationWarning",
 ]
 
 [tool.coverage.report]
@@ -294,4 +298,4 @@ exclude = ["docs", "test"]
 ignore = ["W002"]
 
 [tool.repo-review]
-ignore = ["GH102"]
+ignore = ["GH102", "PC111"]
