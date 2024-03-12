@@ -45,6 +45,14 @@ from tornado.netutil import bind_sockets
 if not sys.platform.startswith("win"):
     from tornado.netutil import bind_unix_socket
 
+if sys.platform.startswith("win"):
+    try:
+        import colorama
+
+        colorama.init()
+    except ImportError:
+        pass
+
 from traitlets import (
     Any,
     Bool,
@@ -240,6 +248,8 @@ class ServerWebApplication(web.Application):
         authorizer=None,
         identity_provider=None,
         kernel_websocket_connection_class=None,
+        websocket_ping_interval=None,
+        websocket_ping_timeout=None,
     ):
         """Initialize a server web application."""
         if identity_provider is None:
@@ -277,6 +287,8 @@ class ServerWebApplication(web.Application):
             authorizer=authorizer,
             identity_provider=identity_provider,
             kernel_websocket_connection_class=kernel_websocket_connection_class,
+            websocket_ping_interval=websocket_ping_interval,
+            websocket_ping_timeout=websocket_ping_timeout,
         )
         handlers = self.init_handlers(default_services, settings)
 
@@ -301,6 +313,8 @@ class ServerWebApplication(web.Application):
         authorizer=None,
         identity_provider=None,
         kernel_websocket_connection_class=None,
+        websocket_ping_interval=None,
+        websocket_ping_timeout=None,
     ):
         """Initialize settings for the web application."""
         _template_path = settings_overrides.get(
@@ -383,6 +397,8 @@ class ServerWebApplication(web.Application):
             "identity_provider": identity_provider,
             "event_logger": event_logger,
             "kernel_websocket_connection_class": kernel_websocket_connection_class,
+            "websocket_ping_interval": websocket_ping_interval,
+            "websocket_ping_timeout": websocket_ping_timeout,
             # handlers
             "extra_services": extra_services,
             # Jupyter stuff
@@ -1515,6 +1531,32 @@ class ServerApp(JupyterApp):
             return "jupyter_server.gateway.connections.GatewayWebSocketConnection"
         return ZMQChannelsWebsocketConnection
 
+    websocket_ping_interval = Integer(
+        config=True,
+        help="""
+            Configure the websocket ping interval in seconds.
+
+            Websockets are long-lived connections that are used by some Jupyter
+            Server extensions.
+
+            Periodic pings help to detect disconnected clients and keep the
+            connection active. If this is set to None, then no pings will be
+            performed.
+
+            When a ping is sent, the client has ``websocket_ping_timeout``
+            seconds to respond. If no response is received within this period,
+            the connection will be closed from the server side.
+        """,
+    )
+    websocket_ping_timeout = Integer(
+        config=True,
+        help="""
+            Configure the websocket ping timeout in seconds.
+
+            See ``websocket_ping_interval`` for details.
+        """,
+    )
+
     config_manager_class = Type(
         default_value=ConfigManager,
         config=True,
@@ -1706,7 +1748,9 @@ class ServerApp(JupyterApp):
 
     preferred_dir = Unicode(
         config=True,
-        help=trans.gettext("Preferred starting directory to use for notebooks and kernels."),
+        help=trans.gettext(
+            "Preferred starting directory to use for notebooks and kernels. ServerApp.preferred_dir is deprecated in jupyter-server 2.0. Use FileContentsManager.preferred_dir instead"
+        ),
     )
 
     @default("preferred_dir")
@@ -2101,6 +2145,8 @@ class ServerApp(JupyterApp):
             authorizer=self.authorizer,
             identity_provider=self.identity_provider,
             kernel_websocket_connection_class=self.kernel_websocket_connection_class,
+            websocket_ping_interval=self.websocket_ping_interval,
+            websocket_ping_timeout=self.websocket_ping_timeout,
         )
         if self.certfile:
             self.ssl_options["certfile"] = self.certfile
@@ -2268,7 +2314,7 @@ class ServerApp(JupyterApp):
         info(self.running_server_info())
         yes = _i18n("y")
         no = _i18n("n")
-        sys.stdout.write(_i18n("Shutdown this Jupyter server (%s/[%s])? ") % (yes, no))
+        sys.stdout.write(_i18n("Shut down this Jupyter server (%s/[%s])? ") % (yes, no))
         sys.stdout.flush()
         r, w, x = select.select([sys.stdin], [], [], 5)
         if r:
